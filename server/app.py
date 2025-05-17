@@ -64,6 +64,7 @@ def callback():
         'redirect_uri': app.config['CALLBACK_URL'],
     }
     headers = {"Accept": "application/vnd.github+json"}
+
     response = requests.post(app.config['GITHUB_TOKEN_URL'], headers=headers, data=data)
     if response.status_code != 200:
         return "Failed to fetch access token", 400
@@ -73,7 +74,7 @@ def callback():
         return "Failed to fetch access token", 400
     try:
         user_info = asyncio.run(gh_manager.get_user_info(access_token))
-        user = db.session.get(User, user_info['id'])
+        user = db.session.get(User, {"github_id": user_info['id']})
         if not user:
             user = User(
                 github_id=user_info['id'],
