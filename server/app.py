@@ -1,6 +1,6 @@
 import os
 from flask import Flask, render_template, redirect, url_for, request, jsonify, session
-from models import db, User
+from server.models import db, User
 import requests
 from urllib.parse import urlencode
 from dotenv import load_dotenv
