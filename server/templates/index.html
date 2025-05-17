@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>GitHub OAuth Demo</title>
+</head>
+<body>
+    <h1>GitHub OAuth Demo</h1>
+    
+    {% if authorized %}
+        <button onclick="getStats()">Show Stats</button>
+        <button onclick="logout()">Logout</button>
+        <div id="stats"></div>
+    {% else %}
+        <button onclick="login()">Authorize with GitHub</button>
+    {% endif %}
+    
+    <script>
+        function login() {
+            window.location.href = '/login';
+        }
+        
+        function logout() {
+            window.location.href = '/logout';
+        }
+        
+        function getStats() {
+            fetch('/stats')
+                .then(response => response.json())
+                .then(data => {
+                    const statsDiv = document.getElementById('stats');
+                    languages = "";
+                    for (const lang in data.languages) {
+                        languages += `${lang}: ${data.languages[lang]}<br>`;
+                    }
+                    data.languages = languages;
+                    statsDiv.innerHTML = `
+                        <ul>
+                            <li>Stars: ${data.stars}</li>
+                            <li>Forks: ${data.forks}</li>
+                            <li>Total Issues: ${data.total_issues}</li>
+                            <li>Total Commits: ${data.total_commits}</li>
+                            <li>Total Pull Requests: ${data.total_pulls}</li>
+                            <li>Languages: ${data.languages}</li>
+                        </ul>
+                    `;
+                })
+                .catch(error => console.error('Error:', error));
+        }
+    </script>
+</body>
+</html>

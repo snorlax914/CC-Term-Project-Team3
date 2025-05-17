@@ -1,40 +1,117 @@
-from flask import Flask, jsonify, request
-import requests
-from functools import wraps
 import os
+from flask import Flask, render_template, redirect, url_for, request, jsonify, session
+from models import db, User
+import requests
+from urllib.parse import urlencode
 from dotenv import load_dotenv
-from github import Github
-GITHUB_TOKEN = os.getenv('GITHUB_TOKEN', None)
+from functools import wraps
+from github_manager import Github
+from config import Config
+import uuid
+import asyncio
+from sqlalchemy import select
 
 load_dotenv()
 
 app = Flask(__name__)
-github_manager = Github(token=GITHUB_TOKEN)
+app.secret_key = os.getenv('SECRET_KEY')
+app.config.from_object(Config)
 
+db.init_app(app)
 
-def handle_github_response(response):
-    """Handle GitHub API response"""
-    if response.status_code == 200:
-        return jsonify(response.json()), 200
-    else:
-        return jsonify({
-            "error": "GitHub API request failed",
-            "status_code": response.status_code,
-            "message": response.json().get('message', 'No error message')
-        }), response.status_code
+gh_manager = Github()
 
-@app.errorhandler(404)
-def not_found(error):
-    return jsonify({"error": "Not found"}), 404
+def login_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if 'user_id' not in session:
+            return redirect(url_for('index')) # change to login page when implemented
+        return f(*args, **kwargs)
+    return decorated_function
 
-@app.errorhandler(500)
-def internal_server_error(error):
-    return jsonify({"error": "Internal server error"}), 500
+@app.route('/')
+def index():
+    authorized = 'user_id' in session
+    return render_template('index.html', authorized=authorized)
 
-@app.route('/api/repos/<owner>/<repo>/languages', methods=['GET'])
-def get_repo_languages(owner, repo):
-    response = github_manager.handle_request(f"/repos/{owner}/{repo}/languages")
-    return github_manager.handle_response(response)
+@app.route('/login')
+def login():
+    session['current_state'] = str(uuid.uuid4())
+    params = urlencode({
+        'client_id': app.config['GITHUB_CLIENT_ID'],
+        'redirect_uri': app.config['CALLBACK_URL'],
+        'state': session['current_state']
+    })
+    return redirect(app.config['GITHUB_AUTHORIZE_URL']+'?'+params)
 
+@app.route('/api/auth/callback/github')
+def callback():
+    request_state = request.args.get('state')
+    if not request_state:
+        return "Missing state parameter in callback", 400
+
+    if request.args.get('state') != session['current_state']:
+        return "Invalid state parameter", 403
+    
+    code = request.args.get('code')
+    if not code:
+        return "Missing code parameter", 400
+    
+    data = {
+        'client_id': app.config['GITHUB_CLIENT_ID'],
+        'client_secret': app.config['GITHUB_CLIENT_SECRET'],
+        'code': code,
+        'redirect_uri': app.config['CALLBACK_URL'],
+    }
+    headers = {"Accept": "application/vnd.github+json"}
+    response = requests.post(app.config['GITHUB_TOKEN_URL'], headers=headers, data=data)
+    if response.status_code != 200:
+        return "Failed to fetch access token", 400
+    token_data = response.json()
+    access_token = token_data.get('access_token')
+    if not access_token:
+        return "Failed to fetch access token", 400
+    try:
+        user_info = asyncio.run(gh_manager.get_user_info(access_token))
+        user = db.session.get(User, user_info['id'])
+        if not user:
+            user = User(
+                github_id=user_info['id'],
+                login=user_info['login'],
+                access_token=access_token,
+                avatar_url=user_info['avatar_url'],
+                html_url=user_info['html_url'],
+            )
+            db.session.add(user)
+        else:
+            user.access_token = access_token
+        
+        db.session.commit()
+        session['user_id'] = user.id
+    except Exception as e:
+        db.session.rollback()
+        return f"Error fetching user info: {str(e)}", 500
+    return redirect(url_for('index'))
+
+    
+@app.route('/logout')
+def logout():
+    session.pop('user_id', None)
+    return redirect(url_for('index'))
+    
+@app.route('/stats')
+@login_required
+def stats():
+    user = db.session.get(User, session['user_id'])
+    if not user:
+        return jsonify({'error': 'User not found'}), 404
+    try:
+        stats = asyncio.run(gh_manager.get_user_stats(user.access_token))
+        if not stats:
+            return jsonify({'error': 'Failed to fetch stats'}), 500
+        return jsonify(stats), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+    
 if __name__ == '__main__':
-    app.run(debug=True, port=5000)
+    app.run(debug=True, port=5001)
