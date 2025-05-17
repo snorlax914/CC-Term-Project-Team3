@@ -74,7 +74,8 @@ def callback():
         return "Failed to fetch access token", 400
     try:
         user_info = asyncio.run(gh_manager.get_user_info(access_token))
-        user = db.session.get(User, {"github_id": user_info['id']})
+        user = User.query.filter_by(github_id=user_info['id']).first()
+
         if not user:
             user = User(
                 github_id=user_info['id'],
