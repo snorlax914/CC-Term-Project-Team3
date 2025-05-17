@@ -1,12 +1,12 @@
 import os
 from flask import Flask, render_template, redirect, url_for, request, jsonify, session
 from server.models import db, User
+from server.github_manager import Github
+from server.config import Config
 import requests
 from urllib.parse import urlencode
 from dotenv import load_dotenv
 from functools import wraps
-from github_manager import Github
-from config import Config
 import uuid
 import asyncio
 from sqlalchemy import select
