@@ -75,7 +75,6 @@ def callback():
     try:
         user_info = asyncio.run(gh_manager.get_user_info(access_token))
         user = User.query.filter_by(github_id=user_info['id']).first()
-
         if not user:
             user = User(
                 github_id=user_info['id'],
