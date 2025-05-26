@@ -24,23 +24,25 @@
         }
         
         function getStats() {
-            fetch('/stats')
+            fetch('/stats/KenesYerassyl')
                 .then(response => response.json())
                 .then(data => {
+                    console.log(data);
                     const statsDiv = document.getElementById('stats');
-                    languages = "";
-                    for (const lang in data.languages) {
-                        languages += `${lang}: ${data.languages[lang]}<br>`;
+                    languages = [];
+                    for (index in data.languages) {
+                        console.log(data.languages[index]);
+                        languages.push(data.languages[index]['name']);
                     }
-                    data.languages = languages;
                     statsDiv.innerHTML = `
                         <ul>
+                            <li>Repo: ${data.repos_count}</li>
                             <li>Stars: ${data.stars}</li>
                             <li>Forks: ${data.forks}</li>
-                            <li>Total Issues: ${data.total_issues}</li>
-                            <li>Total Commits: ${data.total_commits}</li>
-                            <li>Total Pull Requests: ${data.total_pulls}</li>
-                            <li>Languages: ${data.languages}</li>
+                            <li>Total Issues: ${data.issues}</li>
+                            <li>Total Commits: ${data.commits}</li>
+                            <li>Total Pull Requests: ${data.pulls}</li>
+                            <li>Languages: ${languages}</li>
                         </ul>
                     `;
                 })

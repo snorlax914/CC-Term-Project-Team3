@@ -1,4 +1,4 @@
-from flask import jsonify
+import datetime
 import asyncio
 import aiohttp
 
@@ -9,6 +9,19 @@ class Github:
         # for html content: application/vnd.github.html+json
         # for object content: application/vnd.github.object+json
 
+    async def handle_graphql(self, session, access_token, json):
+        headers = {
+            "Authorization": f"Bearer {access_token}",
+            "Content-Type": "application/json"
+        }
+        url = self.base_url + '/graphql'
+        async with session.post(url, json=json, headers=headers) as response:
+            if response.status == 200:
+                return await response.json()
+            else:
+                return await None
+
+    # Currently not used, but can be used for REST API requests
     async def handle_request(self, session, endpoint, access_token, params=None):
         """Make authenticated request to GitHub API"""
         headers = {"Accept": "application/vnd.github+json", "Authorization": f"Bearer {access_token}"}
@@ -19,104 +32,180 @@ class Github:
                 return await response.json()
             else:
                 return await None
-    
-    async def get_all_repos(self, session, access_token):
-        """Get all repositories for the authenticated user. Requires authentication."""
-        repos = []
-        page = 1
-        while True:
-            params = {"page": page, "per_page": 100}
-            current_repos = await self.handle_request(session, "/user/repos", access_token, params=params)
-            if not current_repos:
-                break
-            repos.extend(current_repos)
-            if len(current_repos) < 100:
-                break
-            page += 1
-        return repos
+        
+    async def get_user_contributions(self, username, access_token, start=None, end=None):
+        if not start or not end:
+            end = datetime.datetime.now()
+            start = end - datetime.timedelta(weeks=48)
+        # start = datetime.strptime(start, "%Y-%m-%d")
+        # end = datetime.strptime(end, "%Y-%m-%d")
 
-    async def get_repo_stats(self, session, repo, access_token):
-        stats = {
+        query = """
+        query($username: String!, $from: DateTime!, $to: DateTime!) {
+            user(login: $username) {
+                contributionsCollection(from: $from, to: $to) {
+                    contributionCalendar {
+                        weeks {
+                            contributionDays {
+                                date
+                                contributionCount
+                                color
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        """
+        variables = {
+            "username": username,
+            "from": start.isoformat(),
+            "to": end.isoformat()
+        }
+
+        async with aiohttp.ClientSession() as session:
+            try:
+                response = await self.handle_graphql(session, access_token, json={"query": query, "variables": variables})
+                if response and 'data' in response:
+                    return response['data']['user']['contributionsCollection']['contributionCalendar']['weeks']
+            except Exception as e:
+                print(f"Async request failed: {e}")
+                return None
+
+    async def get_user_info(self, access_token):
+        query = """
+        query() {
+            viewer {
+                id
+                login
+                avatarUrl
+                url
+            }
+        }
+        """
+        async with aiohttp.ClientSession() as session:
+            try:
+                response = await self.handle_graphql(session, access_token, json={"query": query})
+                if response and 'data' in response:
+                    return {
+                        'githubId': response['data']['viewer']['id'],
+                        'login': response['data']['viewer']['login'],
+                        'avatarUrl': response['data']['viewer']['avatarUrl'],
+                        'url': response['data']['viewer']['url'],
+                    }
+
+            except Exception as e:
+                print(f"Async request failed: {e}")
+                return None
+    
+    async def get_user_stats(self, access_token, github_id):
+        query = """
+        query($first: Int!, $github_id: ID!, $after: String) {
+            viewer {
+                repositories(first: $first, after: $after) {
+                    totalCount
+                    nodes {
+                        stargazerCount
+                        forkCount
+                        issues {
+                            totalCount
+                        }
+                        pullRequests {
+                            totalCount
+                        }
+                        defaultBranchRef {
+                            target {
+                                ... on Commit {
+                                    history(author: {id: $github_id}) {
+                                        totalCount
+                                    }
+                                }
+                            }
+                        }
+                        languages(first: 100) {
+                            edges {
+                                size
+                                node {
+                                    name
+                                    color
+                                }
+                            }
+                        }
+                    }
+                    pageInfo {
+                        endCursor
+                        hasNextPage
+                    }
+                }
+            }
+        }
+        """
+        variables = {
+            'first': 100,
+            'github_id': github_id,
+            'after': None
+        }
+        has_next_page = True
+        
+        result = {
+            'repos_count': 0,
+            'stars': 0,
+            'forks': 0,
             'commits': 0,
             'pulls': 0,
             'issues': 0,
-            'languages': {}
+            'languages': [],
         }
+
+        languages = {}
+
+        async with aiohttp.ClientSession() as session:
+            while has_next_page:
+                try:
+                    response = await self.handle_graphql(session, access_token, json={"query": query, "variables": variables})
+                    has_next_page = response['data']['viewer']['repositories']['pageInfo']['hasNextPage']
+                    variables['after'] = response['data']['viewer']['repositories']['pageInfo']['endCursor']
+                    
+                    result['repos_count'] += response['data']['viewer']['repositories']['totalCount']
+                    for node in response['data']['viewer']['repositories']['nodes']:
+                        result['stars'] += node['stargazerCount']
+                        result['forks'] += node['forkCount']
+                        result['issues'] += node['issues']['totalCount']
+                        result['pulls'] += node['pullRequests']['totalCount']
+                        result['commits'] += node['defaultBranchRef']['target']['history']['totalCount']
+                        for edge in node['languages']['edges']:
+                            if edge['node']['name'] not in languages:
+                                languages[edge['node']['name']] = {
+                                    'size': edge['size'],
+                                    'color': edge['node']['color']
+                                }
+                            else:
+                                languages[edge['node']['name']]['size'] += edge['size']
+                except KeyError as e:
+                    print(f"Malformed response missing expected field: {e}")
+                    break
+                except Exception as e:
+                    print(f"Request failed: {e}")
+                    break
+
+        result['languages'] = [{'name': lang, 'size': languages[lang]['size'], 'color': languages[lang]['color']} for lang in languages]
         
-        if repo['commits_url']:
-            commits_url = repo['commits_url'].split('{')[0]
-            commits = await self.handle_request(session, commits_url, access_token)
-            stats['commits'] = len(commits) if commits else 0
+        return result
 
-        if repo['pulls_url']:
-            pulls_url = repo['pulls_url'].split('{')[0]
-            pulls = await self.handle_request(session, pulls_url, access_token)
-            stats['pulls'] = len(pulls) if pulls else 0
-
-        if repo['issues_url']:
-            issues_url = repo['issues_url'].split('{')[0] + "?state=all"
-            issues = await self.handle_request(session, issues_url, access_token)
-            stats['issues'] = len(issues) if issues else 0
-
-        if repo['languages_url']:
-            languages = await self.handle_request(session, repo['languages_url'], access_token)
-            stats['languages'] = languages if languages else {}
-
-        return stats
-
-    async def get_user_stats(self, access_token):
-        async with aiohttp.ClientSession() as session:
-            repos = await self.get_all_repos(session, access_token)
-            
-            tasks = []
-            for repo in repos:
-                tasks.append(self.get_repo_stats(session, repo, access_token))
-            
-            all_stats = await asyncio.gather(*tasks)
-            
-            response = {
-                'stars': sum(repo['stargazers_count'] for repo in repos),
-                'forks': sum(repo['forks_count'] for repo in repos),
-                'total_repos': len(repos),
-                'total_commits': 0,
-                'total_pulls': 0,
-                'total_issues': 0,
-                'languages': {}
-            }
-            
-            for stats in all_stats:
-                response['total_commits'] += stats['commits']
-                response['total_pulls'] += stats['pulls']
-                response['total_issues'] += stats['issues']
-                
-                for lang, bytes in stats['languages'].items():
-                    response['languages'][lang] = response['languages'].get(lang, 0) + bytes
-            return response
-    
-    async def get_user_info(self, access_token):
-        """Get user information from GitHub API"""
-        async with aiohttp.ClientSession() as session:
-            user_info = await self.handle_request(session, "/user", access_token)
-            if user_info:
-                return {
-                    'id': user_info['id'],
-                    'login': user_info['login'],
-                    'avatar_url': user_info['avatar_url'],
-                    'html_url': user_info['html_url']
-                }
-            return None
-    
+# TESTING CODE
 from dotenv import load_dotenv
 import os
+import json
 load_dotenv()
-GITHUB_TOKEN = os.getenv('GITHUB_TOKEN', None)
+GITHUB_TOKEN = os.getenv('GITHUB_TOKEN2', None)
 # repos = gh.handle_request("https://api.github.com/repos/facebookresearch/mae_st/commits")
-
 async def main():
     gh = Github()
-    async with aiohttp.ClientSession() as session:
-        res = await gh.handle_request(session, "/user", GITHUB_TOKEN)
-        print(res)
+    # var = await gh.get_user_events("KenesYerassyl", GITHUB_TOKEN, datetime.datetime.now() - datetime.timedelta(days=10), datetime.datetime.now())
+    var = await gh.get_user_stats(GITHUB_TOKEN, "MDQ6VXNlcjY4NzAwODcy")
+    # async with aiohttp.ClientSession() as session:
+    #     var = await gh.handle_request(endpoint="/user", access_token=GITHUB_TOKEN, session=session)
+    print(var)
 
 if __name__ == '__main__':
     asyncio.run(main())
