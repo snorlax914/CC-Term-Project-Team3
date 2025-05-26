@@ -6,15 +6,19 @@ import { colors } from "../types/colors";
 export const Header = () => {
   return (
     <HeaderContainer>
-      <HeaderLeft>
-      <HeaderLogo src={Logo} alt="GitRank Logo" />
-      <HeaderText>GitRank</HeaderText>
-      </HeaderLeft>
+      <Link to="/">
+        <HeaderLeft>
+        <HeaderLogo src={Logo} alt="GitRank Logo" />
+        <HeaderText>GitRank</HeaderText>
+        </HeaderLeft>
+      </Link>
       <HeaderRight>
         <MenuItem>검색</MenuItem>
-        <MenuItem>랭킹</MenuItem>
+        <Link to="/rank">
+          <MenuItem>랭킹</MenuItem>
+        </Link>
         <Link to="/mypage">
-        <MenuItem>마이페이지</MenuItem>
+          <MenuItem>마이페이지</MenuItem>
         </Link>
         </HeaderRight>
     </HeaderContainer>
