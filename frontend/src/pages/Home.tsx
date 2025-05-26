@@ -44,7 +44,7 @@ const Container = styled.div`
   display: flex;
   border-radius: 8px;
   border: 2px solid ${colors.gray.dark};
-  background-color: ${colors.black.medium};
+  background-color: ${colors.black.dark};
   padding: 50px;
   box-sizing: border-box;
   flex-direction: column;

@@ -1,4 +1,5 @@
 import styled from "@emotion/styled";
+import { Link } from "react-router-dom";
 import Logo from "../assets/logo.png";
 import { colors } from "../types/colors";
 
@@ -12,7 +13,9 @@ export const Header = () => {
       <HeaderRight>
         <MenuItem>검색</MenuItem>
         <MenuItem>랭킹</MenuItem>
+        <Link to="/mypage">
         <MenuItem>마이페이지</MenuItem>
+        </Link>
         </HeaderRight>
     </HeaderContainer>
   );
@@ -53,9 +56,9 @@ const HeaderRight = styled.div`
   flex-direction: row;
   gap: 32px;
   align-items: center;
-`;
-
-const MenuItem = styled.div`
+  `;
+  
+  const MenuItem = styled.div`
   position: relative;
   font-size: 16px;
   color: #FFF;
@@ -63,6 +66,7 @@ const MenuItem = styled.div`
   padding: 8px 16px;
   border: 1px solid transparent;
   transition: color 0.2s ease;
+  text-decoration: none;
 
   &::before {
     content: '';

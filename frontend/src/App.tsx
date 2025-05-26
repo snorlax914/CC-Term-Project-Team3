@@ -1,13 +1,9 @@
-import { Header } from './features/Header'
-import { Home } from './pages/Home'
+import { AppRouter } from "./routes/AppRouter"
 
 function App() {
 
   return (
-    <>
-      <Header />
-      <Home />
-    </>
+    <AppRouter />
   )
 }
 
