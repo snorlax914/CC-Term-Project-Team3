@@ -1,6 +1,7 @@
 import datetime
 import asyncio
 import aiohttp
+import traceback
 
 class Github:
     def __init__(self):
@@ -19,7 +20,8 @@ class Github:
             if response.status == 200:
                 return await response.json()
             else:
-                return await None
+                print(f"GraphQL request failed with status {response.status}: {await response.text()}")
+                return None
 
     # Currently not used, but can be used for REST API requests
     async def handle_request(self, session, endpoint, access_token, params=None):
@@ -31,7 +33,7 @@ class Github:
             if response.status == 200:
                 return await response.json()
             else:
-                return await None
+                return None
         
     async def get_user_contributions(self, username, access_token, start=None, end=None):
         if not start or not end:
@@ -185,6 +187,7 @@ class Github:
                     print(f"Malformed response missing expected field: {e}")
                     break
                 except Exception as e:
+                    print(traceback.format_exc())
                     print(f"Request failed: {e}")
                     break
 

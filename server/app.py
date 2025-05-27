@@ -1,6 +1,6 @@
 import os
 from flask import Flask, render_template, redirect, url_for, request, jsonify, session
-from server.models import db, User, Friend
+from server.models import db, User, Friend, update_score
 from server.github_manager import Github
 from server.config import Config
 import requests
@@ -9,70 +9,81 @@ from dotenv import load_dotenv
 from functools import wraps
 import uuid
 import asyncio
-from sqlalchemy import and_, or_
+from server.jwt_utils import create_access_token, verify_access_token
+from sqlalchemy import and_, or_, func
+import traceback
 
 load_dotenv()
 
 app = Flask(__name__)
-app.secret_key = os.getenv('SECRET_KEY')
 app.config.from_object(Config)
 
 db.init_app(app)
 
 gh_manager = Github()
 
-def login_required(f):
+def token_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        if 'user_id' not in session:
-            return redirect(url_for('index')) # change to login page when implemented
-        return f(*args, **kwargs)
+        token = None
+        if 'Authorization' in request.headers:
+            token = request.headers['Authorization'].split(" ")[1]
+        
+        if not token:
+            return jsonify({'message': 'Token is missing!'}), 401
+        
+        user_id = verify_access_token(token, app)
+        if not user_id:
+            return jsonify({'message': 'Invalid or expired token!'}), 401
+        
+        return f(user_id, *args, **kwargs)
+    
     return decorated_function
 
-@app.route('/')
-def index():
-    authorized = 'user_id' in session
-    return render_template('index.html', authorized=authorized)
+@app.route('/auth/refresh', methods=['POST'])
+@token_required
+def refresh_token(user_id):
+    new_token = create_access_token(user_id, app)
+    return jsonify({'access_token': new_token})
 
 @app.route('/login')
 def login():
-    session['current_state'] = str(uuid.uuid4())
+    state = str(uuid.uuid4())
     params = urlencode({
         'client_id': app.config['GITHUB_CLIENT_ID'],
         'redirect_uri': app.config['CALLBACK_URL'],
-        'state': session['current_state']
+        'state': state
     })
-    return redirect(app.config['GITHUB_AUTHORIZE_URL']+'?'+params)
+    auth_url = f"{app.config['GITHUB_AUTHORIZE_URL']}?{params}"
+    return jsonify({
+        'oauth_url': auth_url,
+        'state': state  # Client must store and verify this
+    })
 
 @app.route('/api/auth/callback/github')
 def callback():
-    request_state = request.args.get('state')
-    if not request_state:
-        return "Missing state parameter in callback", 400
-
-    if request.args.get('state') != session['current_state']:
-        return "Invalid state parameter", 403
+    if not request.args.get('state'):
+        return jsonify({'error': 'Missing state parameter'}), 400
     
-    code = request.args.get('code')
-    if not code:
-        return "Missing code parameter", 400
+    if not request.args.get('code'):
+        return jsonify({'error': 'Missing code parameter'}), 400
     
     data = {
         'client_id': app.config['GITHUB_CLIENT_ID'],
         'client_secret': app.config['GITHUB_CLIENT_SECRET'],
-        'code': code,
+        'code': request.args.get('code'),
         'redirect_uri': app.config['CALLBACK_URL'],
     }
     headers = {"Accept": "application/vnd.github+json"}
 
-    response = requests.post(app.config['GITHUB_TOKEN_URL'], headers=headers, data=data)
-    if response.status_code != 200:
-        return "Failed to fetch access token", 400
-    token_data = response.json()
-    access_token = token_data.get('access_token')
-    if not access_token:
-        return "Failed to fetch access token", 400
     try:
+        token_response = requests.post(app.config['GITHUB_TOKEN_URL'], headers=headers, data=data)
+        token_response.raise_for_status()
+        access_token = token_response.json().get('access_token')
+
+        if not access_token:
+            return "Failed to fetch access token", 400
+        
         user_info = asyncio.run(gh_manager.get_user_info(access_token))
         user = User.query.filter_by(github_id=user_info['githubId']).first()
         if not user:
@@ -86,23 +97,27 @@ def callback():
             db.session.add(user)
         else:
             user.access_token = access_token
-        
+
+        update_score(user.id, gh_manager)
         db.session.commit()
-        session['user_id'] = user.id
+
+        token = create_access_token(user.id, app)
+        return jsonify({
+            'access_token': token,
+            'user': {
+                'id': user.id,
+                'login': user.login,
+                'avatar_url': user.avatar_url
+            }
+        })
     except Exception as e:
         db.session.rollback()
+        print(traceback.format_exc())
         return f"Error fetching user info: {str(e)}", 500
-    return redirect(url_for('index'))
-
-    
-@app.route('/logout')
-def logout():
-    session.pop('user_id', None)
-    return redirect(url_for('index'))
-    
+  
 @app.route('/stats/<string:login>', methods=['GET'])
-@login_required
-def stats(login):
+@token_required
+def stats(user_id, login):
     user = User.query.filter_by(login=login).first()
     if not user:
         return jsonify({'error': 'User not found'}), 404
@@ -115,8 +130,8 @@ def stats(login):
         return jsonify({'error': str(e)}), 500
 
 @app.route('/contributions/<string:login>', methods=['GET'])
-@login_required
-def contributions(login):
+@token_required
+def contributions(user_id, login):
     user = User.query.filter_by(login=login).first()
     if not user:
         return jsonify({'error': 'User not found'}), 404
@@ -131,14 +146,14 @@ def contributions(login):
         return jsonify({'error': str(e)}), 500
 
 @app.route('/friends/request', methods=['POST'])
-@login_required
-def send_friend_request():
+@token_required
+def send_friend_request(user_id):
     data = request.get_json()
     if not data or 'friend_id' not in data:
         return jsonify({'error': 'Missing friend_id'}), 400
     
     friend_id = data['friend_id']
-    current_user_id = session['user_id']
+    current_user_id = user_id
 
     friend = db.session.get(User, friend_id)
     if not friend:
@@ -171,9 +186,9 @@ def send_friend_request():
     }), 200
 
 @app.route('/friends/requests', methods=['GET'])
-@login_required
-def get_friend_requests():
-    current_user_id = session['user_id']
+@token_required
+def get_friend_requests(user_id):
+    current_user_id = user_id
 
     pending_requests = db.session.query(Friend, User).join(
         User, Friend.user_id == User.id
@@ -193,9 +208,9 @@ def get_friend_requests():
     } for fr in pending_requests])
 
 @app.route('/friends/requests/<int:request_id>/accept', methods=['PUT'])
-@login_required
-def accept_friend_request(request_id):
-    current_user_id = session['user_id']
+@token_required
+def accept_friend_request(user_id, request_id):
+    current_user_id = user_id
     friend_request = Friend.query.get_or_404(request_id)
 
     if friend_request.friend_id != current_user_id:
@@ -213,9 +228,9 @@ def accept_friend_request(request_id):
     })
 
 @app.route('/friends/requests/<int:request_id>/reject', methods=['PUT'])
-@login_required
-def reject_friend_request(request_id):
-    current_user_id = session['user_id']
+@token_required
+def reject_friend_request(user_id, request_id):
+    current_user_id = user_id
     friend_request = Friend.query.get_or_404(request_id)
 
     if friend_request.friend_id != current_user_id:
@@ -230,9 +245,9 @@ def reject_friend_request(request_id):
     return jsonify({'message': 'Friend request rejected'})
 
 @app.route('/friends/<int:friend_id>/delete', methods=['DELETE'])
-@login_required
-def delete_friend(friend_id):
-    current_user_id = session['user_id']
+@token_required
+def delete_friend(user_id, friend_id):
+    current_user_id = user_id
 
     friendship = Friend.query.filter(
         or_(
@@ -254,9 +269,9 @@ def delete_friend(friend_id):
     })
 
 @app.route('/friends', methods=['GET'])
-@login_required
-def get_friends():
-    current_user_id = session['user_id']
+@token_required
+def get_friends(user_id):
+    current_user_id = user_id
 
     friendships = db.session.query(Friend, User).join(
         User,
@@ -278,3 +293,29 @@ def get_friends():
                 'avatar_url': friend_user.avatar_url
             })
     return jsonify(friends)
+
+@app.route('/search', methods=['GET'])
+def search_users():
+    query = request.args.get('query', '').strip()
+    if not query:
+        return jsonify({'error': 'Query parameter is required'}), 400
+    users = User.query.filter(func.lower(User.login).like(f'%{query.lower()}%')).all()
+    results = [{
+        'id': user.id,
+        'login': user.login,
+        'avatar_url': user.avatar_url,
+        'html_url': user.html_url
+    } for user in users]
+    return jsonify(results), 200
+
+@app.route('/score/<int:user_id>', methods=['GET'])
+def get_user_score(user_id):
+    user = User.query.get(user_id)
+    if not user:
+        return jsonify({'error': 'User not found'}), 404
+    score = update_score(user.id, gh_manager)
+    if score is None:
+        return jsonify({'error': 'Failed to update score'}), 500
+    return jsonify({'user_id': user.id, 'score': score}), 200
+
+    
