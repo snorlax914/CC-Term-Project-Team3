@@ -11,7 +11,7 @@ class Config:
     GITHUB_TOKEN_URL = 'https://github.com/login/oauth/access_token'
     
     SECRET_KEY = os.getenv('SECRET_KEY', 'dev-secret-key')
-    CALLBACK_URL = 'http://172.21.13.13:5001/api/auth/callback/github'
+    CALLBACK_URL = 'http://localhost:5001/api/auth/callback/github'
     
     SQLALCHEMY_DATABASE_URI = os.getenv('DATABASE_URL') + '?sslmode=require'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
