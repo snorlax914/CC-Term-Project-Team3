@@ -70,8 +70,6 @@ export const ContributionHeatmap = () => {
         })
       }
   
-      console.log(activities)
-  
       return activities.sort((a, b) => a.time.localeCompare(b.time)) as { type: string; repo: string; message: string; time: string }[]
     }
 

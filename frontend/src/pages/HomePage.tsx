@@ -1,6 +1,44 @@
-import styled from "@emotion/styled"
-import { Link } from "react-router-dom"
-import Layout from "../components/Layout"
+import styled from "@emotion/styled";
+import Layout from "../components/Layout";
+
+
+export default function HomePage() {
+  const handleLogin = async () => {
+    const res = await fetch("http://3.107.76.196/login");
+    const { oauth_url, state } = await res.json();
+  
+    // ✅ state를 localStorage에 저장
+    localStorage.setItem("oauth_state", state);
+  
+    window.location.href = oauth_url;
+  };
+  
+  
+    
+  return (
+    <Layout>
+      <PageContainer>
+        <MainContent>
+          <Container>
+            <ContentWrapper>
+              <Description>
+                GitRank는 개발자들이 자신의 GitHub 활동을 시각화하고, 친구들과의 개발
+                <br />
+                역량을 비교하며 서로 동기부여할 수 있는 플랫폼입니다.
+                <br />
+                커밋, PR, 스타 등 GitHub의 다양한 기여 지표를 기반으로 순위를 매기고, 한
+                <br />
+                눈에 자신의 개발 활동을 추적할 수 있습니다.
+              </Description>
+
+              <LoginButton onClick={handleLogin}>Login GitHub</LoginButton>
+            </ContentWrapper>
+          </Container>
+        </MainContent>
+      </PageContainer>
+    </Layout>
+  )
+}
 
 const PageContainer = styled.div`
   min-height: calc(100vh - 80px);
@@ -30,7 +68,7 @@ const Description = styled.p`
   margin-bottom: 2rem;
 `
 
-const LoginButton = styled(Link)`
+const LoginButton = styled.button`
   display: inline-block;
   background-color: #4b5563;
   color: white;
@@ -40,34 +78,10 @@ const LoginButton = styled(Link)`
   font-weight: 500;
   transition: background-color 0.2s;
   text-decoration: none;
+  cursor: pointer;
+  border: none;
   
   &:hover {
     background-color: #374151;
   }
 `
-
-export default function HomePage() {
-  return (
-    <Layout>
-      <PageContainer>
-        <MainContent>
-          <Container>
-            <ContentWrapper>
-              <Description>
-                GitRank는 개발자들이 자신의 GitHub 활동을 시각화하고, 친구들과의 개발
-                <br />
-                역량을 비교하며 서로 동기부여할 수 있는 플랫폼입니다.
-                <br />
-                커밋, PR, 스타 등 GitHub의 다양한 기여 지표를 기반으로 순위를 매기고, 한
-                <br />
-                눈에 자신의 개발 활동을 추적할 수 있습니다.
-              </Description>
-
-              <LoginButton to="/auth/github">Login GitHub</LoginButton>
-            </ContentWrapper>
-          </Container>
-        </MainContent>
-      </PageContainer>
-    </Layout>
-  )
-}

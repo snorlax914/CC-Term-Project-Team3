@@ -1,10 +1,11 @@
-import { Routes, Route } from "react-router-dom"
+import { Route, Routes } from "react-router-dom"
 import HomePage from "./pages/HomePage"
+import LoginCallback from "./pages/LoginCallBack"
+import MorePage from "./pages/MorePage"
+import MyPage from "./pages/MyPage"
+import RankingsPage from "./pages/RankingsPage"
 import SearchPage from "./pages/SearchPage"
 import UserPage from "./pages/UserPage"
-import RankingsPage from "./pages/RankingsPage"
-import MyPage from "./pages/MyPage"
-import MorePage from "./pages/MorePage"
 
 function App() {
   return (
@@ -15,6 +16,7 @@ function App() {
       <Route path="/rankings" element={<RankingsPage />} />
       <Route path="/my-page" element={<MyPage />} />
       <Route path="/more" element={<MorePage />} />
+      <Route path="/callback" element={<LoginCallback />} />
     </Routes>
   )
 }

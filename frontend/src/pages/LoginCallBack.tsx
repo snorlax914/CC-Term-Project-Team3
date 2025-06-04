@@ -1,0 +1,35 @@
+import { useEffect } from "react";
+
+const LoginCallback = () => {
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const code = params.get("code");
+    const returnedState = params.get("state");
+    const originalState = localStorage.getItem("oauth_state");
+
+    if (!code || !returnedState || returnedState !== originalState) {
+      alert("잘못된 인증 요청입니다.");
+      return;
+    }
+
+    fetch(`http://3.107.76.196/api/auth/callback/github?code=${code}&state=${returnedState}`)
+      .then((res) => res.json())
+      .then(({ access_token, user }) => {
+        localStorage.setItem("access_token", access_token);
+        localStorage.setItem("user", JSON.stringify(user));
+        window.location.href = "/";
+      })
+      .catch((err) => {
+        console.error("OAuth 처리 실패", err);
+      });
+  }, []);
+
+  return (
+    <div>
+      <h1>로그인 중...</h1>
+      <p>잠시만 기다려 주세요.</p>
+    </div>
+  );
+};
+
+export default LoginCallback;
