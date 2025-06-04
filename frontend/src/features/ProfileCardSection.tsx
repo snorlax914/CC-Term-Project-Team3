@@ -1,20 +1,23 @@
+import { useAuthStore } from "@/stores/useAuthStore";
 import userData from "@/utils/mock";
 import styled from "@emotion/styled";
 import { Calendar, LinkIcon, MapPin } from "lucide-react";
 
 export const ProfileCardSection = () => {
+  const user = useAuthStore((state) => state.user);
+  console.log("User data:", user);
   return (
     <ProfileCard>
       <ProfileCardContent>
         <ProfileAvatarWrapper>
-          <ProfileAvatar src={userData.avatar_url || "/placeholder.svg"} alt={userData.name}/>
+          <ProfileAvatar src={user?.avatar_url || "/placeholder.svg"} alt={userData.name}/>
         </ProfileAvatarWrapper>
 
         <ProfileInfo>
           <ProfileHeader>
             <ProfileNameSection>
-              <ProfileName>{userData.name}</ProfileName>
-              <ProfileUsername>@{userData.login}</ProfileUsername>
+              <ProfileName>{user?.login}</ProfileName>
+              <ProfileUsername>@{user?.login}</ProfileUsername>
             </ProfileNameSection>
           </ProfileHeader>
 

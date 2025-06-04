@@ -100,8 +100,6 @@ export const ContributionHeatmap = () => {
 
   const heatmapData = generateHeatmapData()
 
-  console.log(heatmapData)
-
   const getHeatmapColor = (count: number) => {
     if (count === 0) return "#f3f4f6"
     if (count <= 2) return "#a7f3d0"

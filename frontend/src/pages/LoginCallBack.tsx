@@ -1,6 +1,8 @@
+import { useAuthStore } from "@/stores/useAuthStore";
 import { useEffect } from "react";
 
 const LoginCallback = () => {
+  const { setAuth } = useAuthStore();
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const code = params.get("code");
@@ -16,7 +18,7 @@ const LoginCallback = () => {
       .then((res) => res.json())
       .then(({ access_token, user }) => {
         localStorage.setItem("access_token", access_token);
-        localStorage.setItem("user", JSON.stringify(user));
+        setAuth(access_token, user);
         window.location.href = "/";
       })
       .catch((err) => {

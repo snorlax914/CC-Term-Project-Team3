@@ -1,5 +1,4 @@
 import { login } from "@/api/auth";
-import { isValidToken } from "@/utils/token";
 import styled from "@emotion/styled";
 import Layout from "../components/Layout";
 
@@ -32,7 +31,8 @@ export default function HomePage() {
                 눈에 자신의 개발 활동을 추적할 수 있습니다.
               </Description>
 
-              {!isValidToken ? <LoginButton onClick={handleLogin}>Login GitHub</LoginButton> : null }
+              {/* {!isValidToken ? <LoginButton onClick={handleLogin}>Login GitHub</LoginButton> : null } */}
+              <LoginButton onClick={handleLogin}>Login GitHub</LoginButton>
             </ContentWrapper>
           </Container>
         </MainContent>
