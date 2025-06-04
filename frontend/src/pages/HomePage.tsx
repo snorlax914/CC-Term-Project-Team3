@@ -1,13 +1,14 @@
+import { login } from "@/api/auth";
+import { isValidToken } from "@/utils/token";
 import styled from "@emotion/styled";
 import Layout from "../components/Layout";
 
 
 export default function HomePage() {
   const handleLogin = async () => {
-    const res = await fetch("http://3.107.76.196/login");
-    const { oauth_url, state } = await res.json();
-  
-    // ✅ state를 localStorage에 저장
+    const res = await login();
+    const { oauth_url, state } = res;
+
     localStorage.setItem("oauth_state", state);
   
     window.location.href = oauth_url;
@@ -31,7 +32,7 @@ export default function HomePage() {
                 눈에 자신의 개발 활동을 추적할 수 있습니다.
               </Description>
 
-              <LoginButton onClick={handleLogin}>Login GitHub</LoginButton>
+              {!isValidToken ? <LoginButton onClick={handleLogin}>Login GitHub</LoginButton> : null }
             </ContentWrapper>
           </Container>
         </MainContent>
