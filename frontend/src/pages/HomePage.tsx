@@ -1,5 +1,5 @@
-import { Link } from "react-router-dom"
 import styled from "@emotion/styled"
+import { Link } from "react-router-dom"
 import Layout from "../components/Layout"
 
 const PageContainer = styled.div`
@@ -46,35 +46,6 @@ const LoginButton = styled(Link)`
   }
 `
 
-const BottomSection = styled.div`
-  background-color: #ecfdf5;
-  padding: 4rem 0;
-`
-
-const BottomHeading = styled.h2`
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: #111827;
-  margin-bottom: 2rem;
-  text-align: center;
-`
-
-const ProfileCircle = styled.div`
-  width: 4rem;
-  height: 4rem;
-  background-color: #fde68a;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 0 auto;
-`
-
-const ProfileText = styled.span`
-  color: #4b5563;
-  font-weight: 500;
-`
-
 export default function HomePage() {
   return (
     <Layout>
@@ -96,15 +67,6 @@ export default function HomePage() {
             </ContentWrapper>
           </Container>
         </MainContent>
-
-        <BottomSection>
-          <Container>
-            <BottomHeading>로그인하고 내 순위를 알아보세요</BottomHeading>
-            <ProfileCircle>
-              <ProfileText>민경</ProfileText>
-            </ProfileCircle>
-          </Container>
-        </BottomSection>
       </PageContainer>
     </Layout>
   )

@@ -1,7 +1,7 @@
+import styled from "@emotion/styled"
+import { BarChart3, Github } from "lucide-react"
 import type { ReactNode } from "react"
 import { Link, useLocation } from "react-router-dom"
-import { BarChart3, Github } from "lucide-react"
-import styled from "@emotion/styled"
 
 const Header = styled.header`
   background-color: white;
