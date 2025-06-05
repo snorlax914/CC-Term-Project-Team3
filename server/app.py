@@ -12,10 +12,12 @@ import asyncio
 from server.jwt_utils import create_access_token, verify_access_token
 from sqlalchemy import and_, or_, func
 import traceback
+from flask_cors import CORS
 
 load_dotenv()
 
 app = Flask(__name__)
+CORS(app)
 app.config.from_object(Config)
 
 db.init_app(app)
