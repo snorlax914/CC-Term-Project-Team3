@@ -1,4 +1,5 @@
-import { getToken, removeToken } from '@/utils/token';
+import { useAuthStore } from '@/stores/useAuthStore';
+import { removeToken } from '@/utils/token';
 import axios, { AxiosInstance } from 'axios';
 import { queryClient } from '../main';
 
@@ -12,10 +13,11 @@ const apiInstance: AxiosInstance = axios.create({
 
 apiInstance.interceptors.request.use(
   async (config) => {
-    const token = await getToken();
+    const { accessToken } = useAuthStore.getState();
+    console.log('Request Interceptor:', accessToken);
 
-    if (token) {
-      config.headers.set('Authorization', `Bearer ${token}`);
+    if (accessToken) {
+      config.headers.set('Authorization', `Bearer ${accessToken}`);
     }
     return config;
   },
@@ -30,7 +32,7 @@ apiInstance.interceptors.response.use(
       if (queryClient) {
         queryClient.clear();
       }
-      window.location.href = '/';
+      // window.location.href = '/';
     }
 
     return Promise.reject(error);

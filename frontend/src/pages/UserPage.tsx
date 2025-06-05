@@ -1,8 +1,8 @@
 "use client"
 
-import { useParams } from "react-router-dom"
-import { Star, GitFork, Users, MapPin, LinkIcon, Calendar, Activity, Github } from "lucide-react"
 import styled from "@emotion/styled"
+import { Activity, Calendar, GitFork, Github, LinkIcon, MapPin, Star, Users } from "lucide-react"
+import { useParams } from "react-router-dom"
 import Layout from "../components/Layout"
 
 const PageContainer = styled.div`

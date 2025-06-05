@@ -6,7 +6,10 @@ import ProfileCardSection from "@/features/ProfileCardSection"
 import QuickStats from "@/features/QuickStats"
 import { RecentCommits } from "@/features/RecentCommits"
 import ScoreCharacter from "@/features/ScoreCharacter"
+import { useAuthStore } from "@/stores/useAuthStore"
+import { useStatsStore } from "@/stores/userStats"
 import styled from "@emotion/styled"
+import { useEffect } from "react"
 
 const PageContainer = styled.div`
   min-height: calc(100vh - 80px);
@@ -32,6 +35,17 @@ const ContentGrid = styled.div`
 
 
 export default function MyPage() {
+  const { stats, loading, error, fetchStats } = useStatsStore();
+  const { user } = useAuthStore();
+
+  useEffect(() => {
+    fetchStats(user?.login || "");
+  }, [fetchStats, user?.login]);
+
+  if (loading) return <div>로딩 중...</div>;
+  if (error) return <div>{error}</div>;
+  if (!stats) return <div>데이터 없음</div>;
+
   return (
     <Layout>
       <PageContainer>
@@ -44,7 +58,7 @@ export default function MyPage() {
             <ContentGrid>
               {/* Left Column */}
               <div>
-                <LanguageGraphSection />
+                <LanguageGraphSection languages={stats.languages}/>
                 {/* Contribution Heatmap */}
                 <ContributionHeatmap />
 

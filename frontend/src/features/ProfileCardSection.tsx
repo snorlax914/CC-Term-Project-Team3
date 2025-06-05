@@ -1,10 +1,13 @@
 import { useAuthStore } from "@/stores/useAuthStore";
+import { useStatsStore } from "@/stores/userStats";
 import userData from "@/utils/mock";
 import styled from "@emotion/styled";
 import { Calendar, LinkIcon, MapPin } from "lucide-react";
 
 export const ProfileCardSection = () => {
   const user = useAuthStore((state) => state.user);
+  const stats = useStatsStore.getState().stats;
+  console.log("Stats data:", stats);
   console.log("User data:", user);
   return (
     <ProfileCard>
@@ -50,7 +53,7 @@ export const ProfileCardSection = () => {
               <StatLabel>총 점수</StatLabel>
             </StatCard>
             <StatCard>
-              <StatValue>{userData.commits}</StatValue>
+              <StatValue>{stats?.commits}</StatValue>
               <StatLabel>커밋</StatLabel>
             </StatCard>
             <StatCard>
@@ -58,7 +61,7 @@ export const ProfileCardSection = () => {
               <StatLabel>PR</StatLabel>
             </StatCard>
             <StatCard>
-              <StatValue>{userData.issue}</StatValue>
+              <StatValue>{stats?.issues}</StatValue>
               <StatLabel>이슈</StatLabel>
             </StatCard>
             <StatCard>
