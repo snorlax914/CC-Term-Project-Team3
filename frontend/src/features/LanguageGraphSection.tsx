@@ -6,7 +6,7 @@ interface LanguageStatWithPercentage extends LanguageStat {
   percentage: number;
 }
 
-export const getTopLanguagesWithPercentage = (
+const getTopLanguagesWithPercentage = (
   languages: LanguageStat[],
 ): LanguageStatWithPercentage[] => {
   const sorted = [...languages].sort((a, b) => b.size - a.size);
@@ -22,6 +22,7 @@ export const getTopLanguagesWithPercentage = (
 export const LanguageGraphSection = ({ languages }: { languages: LanguageStat[] })=> {
 
   const topLanguages: LanguageStatWithPercentage[] = getTopLanguagesWithPercentage(languages);
+  console.log("Top Languages with Percentage:", languages);
   return (
     <Card>
       <CardHeader>

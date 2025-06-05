@@ -35,14 +35,18 @@ const ContentGrid = styled.div`
 
 
 export default function MyPage() {
-  const { stats, loading, error, fetchStats } = useStatsStore();
+  const { stats, contributions, loading, error, fetchStats, fetchContributions } = useStatsStore();
   const { user } = useAuthStore();
 
   useEffect(() => {
-    fetchStats(user?.login || "");
-  }, [fetchStats, user?.login]);
+    if (user?.login) {
+      fetchStats(user.login);
+      fetchContributions(user.login);
+    }
+  }, [user?.login]);
+  
 
-  if (loading) return <div>로딩 중...</div>;
+  if (loading.stats || loading.contributions) return <div>로딩 중...</div>;
   if (error) return <div>{error}</div>;
   if (!stats) return <div>데이터 없음</div>;
 
@@ -60,7 +64,7 @@ export default function MyPage() {
               <div>
                 <LanguageGraphSection languages={stats.languages}/>
                 {/* Contribution Heatmap */}
-                <ContributionHeatmap />
+                <ContributionHeatmap contributions={contributions}/>
 
                 {/* Recent Commits */}
                 <RecentCommits />
