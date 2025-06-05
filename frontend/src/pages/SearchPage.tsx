@@ -1,12 +1,93 @@
-"use client"
 
-import type React from "react"
+import { searchUser, SearchUserResponse } from "@/api/friend";
+import styled from "@emotion/styled";
+import { Search } from "lucide-react";
+import type React from "react";
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import Layout from "../components/Layout";
 
-import { useState } from "react"
-import { useNavigate, Link } from "react-router-dom"
-import { Search } from "lucide-react"
-import styled from "@emotion/styled"
-import Layout from "../components/Layout"
+export default function SearchPage() {
+  const [searchQuery, setSearchQuery] = useState("")
+  const [results, setResults] = useState<SearchUserResponse | null>(null)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  const navigate = useNavigate();
+
+  const handleSearch = async (e: React.FormEvent) => {
+    e.preventDefault()
+    const trimmed = searchQuery.trim()
+    if (!trimmed) return
+
+    setLoading(true)
+    setError(null)
+    try {
+      const data = await searchUser(trimmed)
+      setResults(data)
+    } catch (err) {
+      setError("검색 중 오류가 발생했습니다.")
+      setResults(null)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <Layout>
+      <PageContainer>
+        <MainContent>
+          <Container>
+            <ContentWrapper>
+              <PageTitle>검색</PageTitle>
+
+              <SearchForm onSubmit={handleSearch}>
+                <SearchInputWrapper>
+                  <Search size={20} color="#9ca3af" style={{ position: "absolute", left: "1rem", top: "50%", transform: "translateY(-50%)" }} />
+                  <SearchInput
+                    type="text"
+                    placeholder="GitHub 사용자명을 입력하세요"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
+                  <SearchButton type="submit" disabled={!searchQuery.trim()}>
+                    검색
+                  </SearchButton>
+                </SearchInputWrapper>
+              </SearchForm>
+
+              {loading && <p>로딩 중...</p>}
+              {error && <p style={{ color: "red" }}>{error}</p>}
+
+              {results && (
+                <>
+                  <SectionTitle>검색 결과</SectionTitle>
+                  {results.length > 0 ? (
+                    <UserCardList>
+                      {results.map((user, index) => (
+                        <UserCard key={index}>
+                          <UserCardContent to={`/user/${user.login}`}>
+                            <UserAvatar src={user.avatar_url || "/placeholder.svg"} alt={user.login} />
+                            <UserInfo>
+                              <UserName>{user.login}</UserName>
+                              <UserUsername>@{user.login}</UserUsername>
+                            </UserInfo>
+                          </UserCardContent>
+                        </UserCard>
+                      ))}
+                    </UserCardList>
+                  ) : (
+                    <p>검색 결과가 없습니다.</p>
+                  )}
+                </>
+              )}
+            </ContentWrapper>
+          </Container>
+        </MainContent>
+      </PageContainer>
+    </Layout>
+  )
+}
 
 const PageContainer = styled.div`
   min-height: calc(100vh - 80px);
@@ -128,77 +209,4 @@ const UserName = styled.h3`
 
 const UserUsername = styled.p`
   color: #6b7280;
-`
-
-export default function SearchPage() {
-  const [searchQuery, setSearchQuery] = useState("")
-  const navigate = useNavigate()
-
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (searchQuery.trim()) {
-      navigate(`/user/${searchQuery.trim()}`)
-    }
-  }
-
-  const recentSearches = [
-    { username: "torvalds", name: "Linus Torvalds", avatar: "/placeholder.svg?height=40&width=40" },
-    { username: "gaearon", name: "Dan Abramov", avatar: "/placeholder.svg?height=40&width=40" },
-    { username: "sindresorhus", name: "Sindre Sorhus", avatar: "/placeholder.svg?height=40&width=40" },
-  ]
-
-  return (
-    <Layout>
-      <PageContainer>
-        <MainContent>
-          <Container>
-            <ContentWrapper>
-              <PageTitle>친구 검색</PageTitle>
-
-              <SearchForm onSubmit={handleSearch}>
-                <SearchInputWrapper>
-                  <Search
-                    size={20}
-                    color="#9ca3af"
-                    style={{
-                      position: "absolute",
-                      left: "1rem",
-                      top: "50%",
-                      transform: "translateY(-50%)",
-                    }}
-                  />
-                  <SearchInput
-                    type="text"
-                    placeholder="GitHub 사용자명을 입력하세요"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                  />
-                  <SearchButton type="submit" disabled={!searchQuery.trim()}>
-                    검색
-                  </SearchButton>
-                </SearchInputWrapper>
-              </SearchForm>
-
-              <div>
-                <SectionTitle>최근 검색</SectionTitle>
-                <UserCardList>
-                  {recentSearches.map((user, index) => (
-                    <UserCard key={index}>
-                      <UserCardContent to={`/user/${user.username}`}>
-                        <UserAvatar src={user.avatar || "/placeholder.svg"} alt={user.name} />
-                        <UserInfo>
-                          <UserName>{user.name}</UserName>
-                          <UserUsername>@{user.username}</UserUsername>
-                        </UserInfo>
-                      </UserCardContent>
-                    </UserCard>
-                  ))}
-                </UserCardList>
-              </div>
-            </ContentWrapper>
-          </Container>
-        </MainContent>
-      </PageContainer>
-    </Layout>
-  )
-}
+  `;

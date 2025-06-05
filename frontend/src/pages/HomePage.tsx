@@ -1,16 +1,26 @@
 import { login } from "@/api/auth";
+import { isValidToken } from "@/utils/token";
 import styled from "@emotion/styled";
+import { useState } from "react";
 import Layout from "../components/Layout";
 
 
 export default function HomePage() {
+  const [isValid, setIsValid] = useState(isValidToken());
+
   const handleLogin = async () => {
     const res = await login();
     const { oauth_url, state } = res;
-
     localStorage.setItem("oauth_state", state);
-  
     window.location.href = oauth_url;
+    setIsValid(true);
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem("access_token");
+    localStorage.removeItem("oauth_state");
+    window.location.href = "/";
+    setIsValid(false);
   };
   
   
@@ -31,8 +41,7 @@ export default function HomePage() {
                 눈에 자신의 개발 활동을 추적할 수 있습니다.
               </Description>
 
-              {/* {!isValidToken ? <LoginButton onClick={handleLogin}>Login GitHub</LoginButton> : null } */}
-              <LoginButton onClick={handleLogin}>Login GitHub</LoginButton>
+              {!isValid ? <LoginButton onClick={handleLogin}>Login With GitHub</LoginButton> : <LoginButton onClick={handleLogout}>Logout</LoginButton>}
             </ContentWrapper>
           </Container>
         </MainContent>

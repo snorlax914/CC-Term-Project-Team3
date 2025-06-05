@@ -1,6 +1,6 @@
 import { useAuthStore } from "@/stores/useAuthStore";
 import { useStatsStore } from "@/stores/userStats";
-import userData from "@/utils/mock";
+import { userData } from "@/utils/mock";
 import styled from "@emotion/styled";
 import { Calendar, LinkIcon, MapPin } from "lucide-react";
 

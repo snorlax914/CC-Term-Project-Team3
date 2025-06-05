@@ -1,4 +1,4 @@
-import userData from "@/utils/mock";
+import { userData } from "@/utils/mock";
 import styled from "@emotion/styled";
 import { Activity, Code, GitBranch } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/Card";

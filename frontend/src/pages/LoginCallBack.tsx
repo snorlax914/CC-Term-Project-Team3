@@ -1,3 +1,4 @@
+import LoginLoadingScreen from "@/features/LoginLoading";
 import { useAuthStore } from "@/stores/useAuthStore";
 import { useEffect } from "react";
 
@@ -28,8 +29,7 @@ const LoginCallback = () => {
 
   return (
     <div>
-      <h1>로그인 중...</h1>
-      <p>잠시만 기다려 주세요.</p>
+      <LoginLoadingScreen isLoading={true} />
     </div>
   );
 };

@@ -1,4 +1,4 @@
-import userData from "@/utils/mock";
+import { userData } from "@/utils/mock";
 import styled from "@emotion/styled";
 
 export const QuickStats = () => {

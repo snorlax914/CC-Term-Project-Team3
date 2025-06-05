@@ -1,4 +1,4 @@
- const userData = {
+export const userData = {
     login: "honggildong",
     name: "홍길동",
     avatar_url: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIGNsYXNzPSJsdWNpZGUgbHVjaWRlLXVzZXItaWNvbiBsdWNpZGUtdXNlciI+PHBhdGggZD0iTTE5IDIxdi0yYTQgNCAwIDAgMC00LTRIOWE0IDQgMCAwIDAtNCA0djIiLz48Y2lyY2xlIGN4PSIxMiIgY3k9IjciIHI9IjQiLz48L3N2Zz4=",
@@ -89,4 +89,51 @@
     ],
   }
 
-export default userData
+export const mockReceivedRequests =
+  [
+    {
+      "request_id": 42,
+      "from_user": {
+        "id": 2,
+        "login": "bob",
+        "avatar_url": "https://avatars.githubusercontent.com/u/1002?v=4"
+      },
+      "status": "pending"
+    },
+    {
+      "request_id": 43,
+      "from_user": {
+        "id": 3,
+        "login": "alice",
+        "avatar_url": "https://avatars.githubusercontent.com/u/1003?v=4"
+      },
+      "status": "accepted"
+    },
+    {
+      "request_id": 44,
+      "from_user": {
+        "id": 4,
+        "login": "charlie",
+        "avatar_url": "https://avatars.githubusercontent.com/u/1004?v=4"
+      },
+      "status": "rejected"
+    },
+    {
+      "request_id": 45,
+      "from_user": {
+        "id": 5,
+        "login": "dave",
+        "avatar_url": "https://avatars.githubusercontent.com/u/1005?v=4"
+      },
+      "status": "pending"
+    },
+    {
+      "request_id": 46,
+      "from_user": {
+        "id": 6,
+        "login": "eve",
+        "avatar_url": "https://avatars.githubusercontent.com/u/1006?v=4"
+      },
+      "status": "accepted"
+    }
+  ]

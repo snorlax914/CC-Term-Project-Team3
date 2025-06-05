@@ -4,6 +4,7 @@ import LoginCallback from "./pages/LoginCallBack"
 import MorePage from "./pages/MorePage"
 import MyPage from "./pages/MyPage"
 import RankingsPage from "./pages/RankingsPage"
+import ReceivedRequestsPage from "./pages/ReceivedRequestPage"
 import SearchPage from "./pages/SearchPage"
 import UserPage from "./pages/UserPage"
 
@@ -17,6 +18,7 @@ function App() {
       <Route path="/my-page" element={<MyPage />} />
       <Route path="/more" element={<MorePage />} />
       <Route path="/callback" element={<LoginCallback />} />
+      <Route path="/requests" element={<ReceivedRequestsPage />} />
     </Routes>
   )
 }

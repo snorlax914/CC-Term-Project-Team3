@@ -96,6 +96,9 @@ export default function Layout({ children }: LayoutProps) {
               <NavLink to="/more" $active={location.pathname === "/more"}>
                 기타
               </NavLink>
+              <NavLink to="/requests" $active={location.pathname === "/requests"}>
+                친구요청
+              </NavLink>
             </Navigation>
           </HeaderContent>
         </Container>
