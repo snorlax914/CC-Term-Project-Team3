@@ -1,8 +1,7 @@
-import { userData } from "@/utils/mock";
 import styled from "@emotion/styled";
 import { Github } from "lucide-react";
 
-export const GithubLink = () => {
+export const GithubLink = ({url}: {url: string}) => {
   return (
     <GitHubCard>
       <GitHubIcon>
@@ -10,7 +9,7 @@ export const GithubLink = () => {
       </GitHubIcon>
       <GitHubTitle>GitHub 프로필</GitHubTitle>
       <GitHubDescription>GitHub에서 더 자세한 정보를 확인하세요</GitHubDescription>
-      <GitHubButton href={`https://github.com/${userData.login}`} target="_blank" rel="noopener noreferrer">
+      <GitHubButton href={url} target="_blank" rel="noopener noreferrer">
         GitHub에서 보기
       </GitHubButton>
     </GitHubCard>

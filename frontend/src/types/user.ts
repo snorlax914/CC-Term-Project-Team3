@@ -28,7 +28,7 @@ export type User = {
     github_id:  string,
     login: string,
     avatar_url: string,
-    html_url: URL,
+    html_url: string,
     repos_count:  number,
     stars: number,
     forks: number,

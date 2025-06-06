@@ -3,7 +3,6 @@ import ContributionHeatmap from "@/features/ContributionHeatmap"
 import GithubLink from "@/features/GithubLink"
 import LanguageGraphSection from "@/features/LanguageGraphSection"
 import ProfileCardSection from "@/features/ProfileCardSection"
-import QuickStats from "@/features/QuickStats"
 import { RecentCommits } from "@/features/RecentCommits"
 import ScoreCharacter from "@/features/ScoreCharacter"
 import { useAuthStore } from "@/stores/useAuthStore"
@@ -68,7 +67,7 @@ export default function MyPage() {
               forks={userStats.forks}
             />
 
-          <ScoreCharacter />
+          <ScoreCharacter score={userStats.score}/>
             <ContentGrid>
               {/* Left Column */}
               <div>
@@ -82,11 +81,8 @@ export default function MyPage() {
 
               {/* Right Column */}
               <div>
-                {/* Quick Stats */}
-                <QuickStats />
-
                 {/* GitHub Link */}
-                <GithubLink />
+                <GithubLink url={userStats.html_url}/>
               </div>
             </ContentGrid>
           </Container>

@@ -43,8 +43,8 @@ export const ProfileCardSection = ({
 
           <StatsGrid>
             <StatCard>
-              <StatValue>{score}</StatValue>
-              <StatLabel>총 점수</StatLabel>
+              <StatValue>{forks}</StatValue>
+              <StatLabel>포크</StatLabel>
             </StatCard>
             <StatCard>
               <StatValue>{commits}</StatValue>
