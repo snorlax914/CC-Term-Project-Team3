@@ -14,6 +14,16 @@ class User(db.Model):
     access_token = db.Column(db.String(200))
     avatar_url = db.Column(db.String(200))
     html_url = db.Column(db.String(200))
+
+    repos_count = db.Column(db.Integer, default=0, nullable=True)
+    stars = db.Column(db.Integer, default=0, nullable=True)
+    forks = db.Column(db.Integer, default=0, nullable=True)
+    commits = db.Column(db.Integer, default=0, nullable=True)
+    pulls = db.Column(db.Integer, default=0, nullable=True)
+    issues = db.Column(db.Integer, default=0, nullable=True)
+    languages = db.Column(db.JSON, default=dict, nullable=True)
+    score = db.Column(db.Integer, default=0, nullable=True)
+
     created_at = db.Column(db.DateTime, server_default=db.func.now())
     
     def __init__(self, github_id, login, access_token, avatar_url, html_url):
@@ -26,47 +36,7 @@ class User(db.Model):
     def __repr__(self):
         return f'<User {self.login}>'
 
-class Friend(db.Model):
-    __tablename__ = 'gitrank_friends'
-
-    id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('gitrank_users.id', ondelete='CASCADE'), nullable=False)
-    friend_id = db.Column(db.Integer, db.ForeignKey('gitrank_users.id', ondelete='CASCADE'), nullable=False)
-    status = db.Column(db.String(20), default='pending', server_default='pending', nullable=False)
-    
-    user = db.relationship('User', foreign_keys=[user_id], backref='friends')
-    friend = db.relationship('User', foreign_keys=[friend_id])
-
-    __table_args__ = (
-        db.UniqueConstraint('user_id', 'friend_id', name='_user_friend_uc'),
-        db.CheckConstraint("status IN ('pending', 'accepted', 'blocked')", name='_status_check')
-    )
-
-    def __init__(self, user_id, friend_id, status='pending'):
-        self.user_id = user_id
-        self.friend_id = friend_id
-        self.status = status
-
-    def __repr__(self):
-        return f'<Friend {self.user_id} -> {self.friend_id} ({self.status})>'
-    
-
-class Score(db.Model):
-    __tablename__ = 'gitrank_scores'
-    
-    id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('gitrank_users.id', ondelete='CASCADE'), nullable=False)
-    score = db.Column(db.Integer, default=0, nullable=False)
-
-    user = db.relationship('User', backref='scores')
-    def __init__(self, user_id, score):
-        self.user_id = user_id
-        self.score = score
-    
-    def __repr__(self):
-        return f'<Score {self.user_id} - {self.score}>'
-
-def update_score(user_id, github_manager: Github):
+def update_stat(user_id, github_manager: Github):
     user = User.query.get(user_id)
     if not user:
         return None
@@ -84,16 +54,39 @@ def update_score(user_id, github_manager: Github):
         'languages': [],
     }
     """
-    score = stats['repos_count'] + stats['stars'] + stats['forks'] + stats['commits'] + stats['pulls'] + stats['issues']
+    user.repos_count = stats['repos_count']
+    user.stars = stats['stars']
+    user.forks = stats['forks']
+    user.commits = stats['commits']
+    user.pulls = stats['pulls']
+    user.issues = stats['issues']
+    user.languages = stats['languages']
+    user.score = stats['repos_count'] + stats['stars'] + stats['forks'] + stats['commits'] + stats['pulls'] + stats['issues']
     
-    existing_score = Score.query.filter_by(user_id=user_id).first()
-
-    if existing_score:
-        existing_score.score = score
-    else:
-        new_score = Score(user_id=user_id, score=score)
-        db.session.add(new_score)
     db.session.commit()
 
-    return score
+class Friend(db.Model):
+    __tablename__ = 'gitrank_friends'
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('gitrank_users.id', ondelete='CASCADE'), nullable=True)
+    friend_id = db.Column(db.Integer, db.ForeignKey('gitrank_users.id', ondelete='CASCADE'), nullable=True)
+    status = db.Column(db.String(20), default='pending', server_default='pending', nullable=True)
+    
+    user = db.relationship('User', foreign_keys=[user_id], backref='friends')
+    friend = db.relationship('User', foreign_keys=[friend_id])
+
+    __table_args__ = (
+        db.UniqueConstraint('user_id', 'friend_id', name='_user_friend_uc'),
+        db.CheckConstraint("status IN ('pending', 'accepted', 'blocked')", name='_status_check')
+    )
+
+    def __init__(self, user_id, friend_id, status='pending'):
+        self.user_id = user_id
+        self.friend_id = friend_id
+        self.status = status
+
+    def __repr__(self):
+        return f'<Friend {self.user_id} -> {self.friend_id} ({self.status})>'
+
     

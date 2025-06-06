@@ -74,6 +74,78 @@ class Github:
                 print(f"Async request failed: {e}")
                 return None
 
+    async def get_user_commits(self, access_token, github_id):
+        query = """
+        query($first: Int!, $github_id: ID!, $after: String) {
+            viewer {
+                repositories(first: $first, after: $after) {
+                    nodes {
+                        name
+                        defaultBranchRef {
+                            name
+                            target {
+                                ... on Commit {
+                                    history(first: 5, author: {id: $github_id}) {
+                                        edges {
+                                            node {
+                                                message
+                                                committedDate
+                                                url,
+                                                deletions,
+                                                changedFilesIfAvailable,
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    pageInfo {
+                        endCursor
+                        hasNextPage
+                    }
+                }
+            }
+        }
+        """
+        variables = {
+            'first': 100,
+            'github_id': github_id,
+            'after': None
+        }
+        has_next_page = True
+        
+        all_commits = []
+
+        async with aiohttp.ClientSession() as session:
+            while has_next_page:
+                try:
+                    response = await self.handle_graphql(session, access_token, json={"query": query, "variables": variables})
+                    has_next_page = response['data']['viewer']['repositories']['pageInfo']['hasNextPage']
+                    variables['after'] = response['data']['viewer']['repositories']['pageInfo']['endCursor']
+                    for node in response['data']['viewer']['repositories']['nodes']:
+                        for edge in node['defaultBranchRef']['target']['history']['edges']:
+                            all_commits.append({
+                                'repo': node['name'],
+                                'branch': node['defaultBranchRef']['name'],
+                                'message': edge['node']['message'],
+                                'committedDate': edge['node']['committedDate'],
+                                'url': edge['node']['url'],
+                                'deletions': edge['node'].get('deletions', 0),
+                                'changedFilesIfAvailable': edge['node'].get('changedFilesIfAvailable', 0),
+                            })
+                    
+                except KeyError as e:
+                    print(f"Malformed response missing expected field: {e}")
+                    break
+                except Exception as e:
+                    print(traceback.format_exc())
+                    print(f"Request failed: {e}")
+                    break
+        
+        sorted_commits = sorted(all_commits, key=lambda x: x["committedDate"], reverse=True)
+        return sorted_commits[:5]
+
     async def get_user_info(self, access_token):
         query = """
         query() {
@@ -200,12 +272,12 @@ from dotenv import load_dotenv
 import os
 import json
 load_dotenv()
-GITHUB_TOKEN = os.getenv('GITHUB_TOKEN2', None)
+GITHUB_TOKEN = os.getenv('GITHUB_TOKEN', None)
 # repos = gh.handle_request("https://api.github.com/repos/facebookresearch/mae_st/commits")
 async def main():
     gh = Github()
     # var = await gh.get_user_events("KenesYerassyl", GITHUB_TOKEN, datetime.datetime.now() - datetime.timedelta(days=10), datetime.datetime.now())
-    var = await gh.get_user_stats(GITHUB_TOKEN, "MDQ6VXNlcjY4NzAwODcy")
+    var = await gh.get_user_comits(GITHUB_TOKEN, "MDQ6VXNlcjY4NzAwODcy")
     # async with aiohttp.ClientSession() as session:
     #     var = await gh.handle_request(endpoint="/user", access_token=GITHUB_TOKEN, session=session)
     print(var)

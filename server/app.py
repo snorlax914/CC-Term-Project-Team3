@@ -1,26 +1,30 @@
-import os
-from flask import Flask, render_template, redirect, url_for, request, jsonify, session
-from server.models import db, User, Friend, update_score
+from flask import Flask, request, jsonify
+from flask_migrate import Migrate
+from flask_cors import CORS
+
+from server.models import db, User, Friend, update_stat
 from server.github_manager import Github
 from server.config import Config
-import requests
+from server.jwt_utils import create_access_token, verify_access_token
+
 from urllib.parse import urlencode
 from dotenv import load_dotenv
 from functools import wraps
+from sqlalchemy import and_, or_, func
+
+import requests
 import uuid
 import asyncio
-from server.jwt_utils import create_access_token, verify_access_token
-from sqlalchemy import and_, or_, func
 import traceback
-from flask_cors import CORS
+
 
 load_dotenv()
 
 app = Flask(__name__)
 CORS(app)
 app.config.from_object(Config)
-
 db.init_app(app)
+migrate = Migrate(app, db)
 
 gh_manager = Github()
 
@@ -100,7 +104,7 @@ def callback():
         else:
             user.access_token = access_token
 
-        update_score(user.id, gh_manager)
+        update_stat(user.id, gh_manager)
         db.session.commit()
 
         token = create_access_token(user.id, app)
@@ -116,34 +120,38 @@ def callback():
         db.session.rollback()
         print(traceback.format_exc())
         return f"Error fetching user info: {str(e)}", 500
-  
-@app.route('/stats/<string:login>', methods=['GET'])
-@token_required
-def stats(user_id, login):
-    user = User.query.filter_by(login=login).first()
-    if not user:
-        return jsonify({'error': 'User not found'}), 404
-    try:
-        stats = asyncio.run(gh_manager.get_user_stats(user.access_token, user.github_id))
-        if not stats:
-            return jsonify({'error': 'Failed to fetch stats'}), 500
-        return jsonify(stats), 200
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
 
-@app.route('/contributions/<string:login>', methods=['GET'])
+@app.route('/user/<string:login>', methods=['GET'])
 @token_required
-def contributions(user_id, login):
+def get_user(user_id, login):
     user = User.query.filter_by(login=login).first()
     if not user:
         return jsonify({'error': 'User not found'}), 404
     start_date = request.args.get('start_date')
     end_date = request.args.get('end_date')
     try:
-        contributions = asyncio.run(gh_manager.get_user_contributions(user.login, user.access_token, start_date, end_date))
-        if not contributions:
-            return jsonify({'error': 'Failed to fetch contributions'}), 500
-        return jsonify(contributions), 200
+        contributions = asyncio.run(gh_manager.get_user_contributions(user.login, user.access_token, start_date, end_date)) or []
+        commits = asyncio.run(gh_manager.get_user_commits(user.access_token, user.github_id)) or []
+
+        return jsonify({
+            "id": user.id,
+            "github_id": user.github_id,
+            "login": user.login,
+            "avatar_url": user.avatar_url,
+            "html_url": user.html_url,
+            "repos_count": user.repos_count,
+            "stars": user.stars,
+            "forks": user.forks,
+            "commit_count": user.commits,
+            "pulls": user.pulls,
+            "issues": user.issues,
+            "languages": user.languages,
+            "score": user.score,
+            "contributions": contributions,
+            "commits": commits,
+            "created_at": user.created_at.isoformat()
+        }), 200
+    
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
@@ -309,15 +317,3 @@ def search_users():
         'html_url': user.html_url
     } for user in users]
     return jsonify(results), 200
-
-@app.route('/score/<int:user_id>', methods=['GET'])
-def get_user_score(user_id):
-    user = User.query.get(user_id)
-    if not user:
-        return jsonify({'error': 'User not found'}), 404
-    score = update_score(user.id, gh_manager)
-    if score is None:
-        return jsonify({'error': 'Failed to update score'}), 500
-    return jsonify({'user_id': user.id, 'score': score}), 200
-
-    
