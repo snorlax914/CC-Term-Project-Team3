@@ -43,8 +43,8 @@ GitRank는 solve.ac가 알고리즘 학습에 동기를 부여했던 방식을 G
 ## E. 관련 기술/논문/특허 조사
 
 ### 1. [Solved.ac](https://solved.ac/)
-![solved.ac_img1](image.png)
-![solved.ac_img2](image-1.png)
+![solved.ac_img1](./images/image.png)
+![solved.ac_img2](./images/image-1.png)
 
 백준 문제풀이 데이터를 기반으로 사용자 티어, 레이팅, 난이도 분포를 시각화하고 랭킹화한 플랫폼
 
@@ -53,7 +53,7 @@ GitRank는 solve.ac가 알고리즘 학습에 동기를 부여했던 방식을 G
 
 ### 2. [42stats](https://stat.42seoul.kr/)
 
-![42stats_img1](image-2.png)
+![42stats_img1](./images/image-2.png)
 
 
 42Seoul 교육생들의 git 기반 과제 진척도 및 평가 데이터를 시각화하는 플랫폼
@@ -63,7 +63,7 @@ GitRank는 solve.ac가 알고리즘 학습에 동기를 부여했던 방식을 G
 
 ### 3. [Gitstar Ranking](https://gitstar-ranking.com/)
 
-![Gitstar Ranking_img1](image-3.png)
+![Gitstar Ranking_img1](./images/image-3.png)
 
 
 GitHub Star 수 기준으로 전 세계 사용자 랭킹 제공
@@ -72,7 +72,7 @@ GitHub Star 수 기준으로 전 세계 사용자 랭킹 제공
 - **한계**: Star 수만 평가 기준이며, 친구 비교 등의 기능 없음
 
 ## F. 프로젝트 개발 결과물 소개 (+ 다이어그램)
-![결과물 다이어그램](image-4.png)
+![결과물 다이어그램](./images/image-4.png)
 
 ## G. 개발 결과물 사용 방법 (설치 및 실행 방법 등)
 _(알려주시면 작성 예정)_
