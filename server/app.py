@@ -297,7 +297,6 @@ def get_friends(user_id):
     for fr in friendships:
         friend_user = fr.User if fr.User.id != current_user_id else None
         if friend_user:
-            contributions = asyncio.run(gh_manager.get_user_contributions(friend_user.login, friend_user.access_token)) or []
             friends.append({
                 'id': friend_user.id,
                 "github_id": friend_user.github_id,
@@ -310,8 +309,7 @@ def get_friends(user_id):
                 "commit_count": friend_user.commits,
                 "pulls": friend_user.pulls,
                 "issues": friend_user.issues,
-                "score": friend_user.score,
-                "contributions": contributions
+                "score": friend_user.score
             })
     return jsonify(friends)
 
