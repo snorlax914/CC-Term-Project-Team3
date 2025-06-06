@@ -25,9 +25,8 @@ const formatRelativeTime = (dateString: string): string => {
 
 
 export const RecentCommits = ({commits}: RecentCommitsProps) => {
-  
 
-  console.log("Recent commits:", commits);
+
   return (
     <Card>
       <CardHeader>
@@ -40,7 +39,7 @@ export const RecentCommits = ({commits}: RecentCommitsProps) => {
       <CardContent>
         <CommitList>
           {commits.map((commit, index) => (
-            <CommitCard key={index}>
+            <CommitCard key={index} onClick={() => {window.open(commit.url, "_blank", "noopener,noreferrer");}}>
               <CommitHeader>
                 <CommitMessage>{commit.message}</CommitMessage>
                 <CommitDate>{formatRelativeTime(commit.committedDate)}</CommitDate>
@@ -79,6 +78,7 @@ const CommitCard = styled.div`
   padding: 1rem;
   border: 1px solid #e5e7eb;
   border-radius: 0.5rem;
+  cursor: pointer;
   
   &:hover {
     background-color: #f9fafb;
