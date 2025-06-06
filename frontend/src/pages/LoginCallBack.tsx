@@ -20,10 +20,13 @@ const LoginCallback = () => {
       .then(({ access_token, user }) => {
         localStorage.setItem("access_token", access_token);
         setAuth(access_token, user);
-        window.location.href = "/";
+        window.location.href = "/home";
       })
       .catch((err) => {
         console.error("OAuth 처리 실패", err);
+        alert("로그인 처리 중 오류가 발생했습니다. 다시 시도해주세요.");
+        localStorage.removeItem("oauth_state");
+        window.location.href = "/";
       });
   }, []);
 

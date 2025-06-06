@@ -1,48 +1,13 @@
+import { User } from "@/types/user";
 import apiInstance from "./apiInstance";
 
-export interface LanguageStat {
-  name: string;
-  color: string;
-  size: number;
-}
-
-export interface StatsResponse {
-  commits: number;
-  forks: number;
-  issues: number;
-  languages: LanguageStat[];
-}
-
-export interface ContributionDay {
-  color: string;
-  contributionCount: number;
-  date: string;
-}
-
-export interface ContributionWeek {
-  contributionDays: ContributionDay[];
-}
-
-export type ContributionsResponse = ContributionWeek[];
-
-
-
-export const getStats = async (username: string): Promise<StatsResponse> => {
+export const getUserStats = async (username: string): Promise<User> => {
   try {
-    const response = await apiInstance.get<StatsResponse>(`/stats/${username}`);
+    const response = await apiInstance.get(`/user/${username}`);
+    console.log("User stats fetched successfully:", response.data);
     return response.data;
   } catch (error) {
-    console.error("Failed to fetch stats:", error);
-    throw error;
-  }
-}
-
-export const getContributions = async (username: string): Promise<ContributionsResponse> => {
-  try {
-    const response = await apiInstance.get<ContributionsResponse>(`/contributions/${username}`);
-    return response.data;
-  } catch (error) {
-    console.error("Failed to fetch contributions:", error);
+    console.error("Error fetching user stats:", error);
     throw error;
   }
 }

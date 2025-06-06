@@ -11,7 +11,9 @@ export default function HomePage() {
   const handleLogin = async () => {
     const res = await login();
     const { oauth_url, state } = res;
+    console.log("OAuth URL:", oauth_url);
     localStorage.setItem("oauth_state", state);
+    localStorage.setItem("url", oauth_url);
     window.location.href = oauth_url;
     setIsValid(true);
   };
