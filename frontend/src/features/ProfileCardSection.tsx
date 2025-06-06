@@ -1,72 +1,66 @@
-import { useAuthStore } from "@/stores/useAuthStore";
-import { useStatsStore } from "@/stores/userStats";
 import { userData } from "@/utils/mock";
 import styled from "@emotion/styled";
-import { Calendar, LinkIcon, MapPin } from "lucide-react";
 
-export const ProfileCardSection = () => {
-  const user = useAuthStore((state) => state.user);
-  const stats = useStatsStore.getState().stats;
-  console.log("Stats data:", stats);
-  console.log("User data:", user);
+interface ProfileCardProps {
+  avatarUrl: string;
+  name: string;
+  githubId: string;
+  stars: number;
+  forks: number;
+  commits: number;
+  issues: number;
+  pulls: number;
+  score: number;
+};
+
+export const ProfileCardSection = ({
+  avatarUrl,
+  name,
+  githubId,
+  stars,
+  forks,
+  commits,
+  issues,
+  pulls,
+  score
+}: ProfileCardProps) => {
   return (
     <ProfileCard>
       <ProfileCardContent>
         <ProfileAvatarWrapper>
-          <ProfileAvatar src={user?.avatar_url || "/placeholder.svg"} alt={userData.name}/>
+          <ProfileAvatar src={avatarUrl || "/placeholder.svg"} alt={userData.name}/>
         </ProfileAvatarWrapper>
 
         <ProfileInfo>
           <ProfileHeader>
             <ProfileNameSection>
-              <ProfileName>{user?.login}</ProfileName>
-              <ProfileUsername>@{user?.login}</ProfileUsername>
+              <ProfileName>{name}</ProfileName>
+              <ProfileUsername>@{githubId}</ProfileUsername>
             </ProfileNameSection>
           </ProfileHeader>
 
-          <ProfileBio>{userData.bio}</ProfileBio>
-
-          <ProfileMetaList>
-            {userData.location && (
-              <ProfileMetaItem>
-                <MapPin size={16} />
-                {userData.location}
-              </ProfileMetaItem>
-            )}
-            {userData.blog && (
-              <ProfileMetaItem>
-                <LinkIcon size={16} />
-                <ProfileLink href={userData.blog} target="_blank" rel="noopener noreferrer">
-                  개인 블로그
-                </ProfileLink>
-              </ProfileMetaItem>
-            )}
-            <ProfileMetaItem>
-              <Calendar size={16} />
-              2020년부터 활동
-            </ProfileMetaItem>
-          </ProfileMetaList>
+          {/* <ProfileBio>{userData.bio}</ProfileBio> */}
 
           <StatsGrid>
             <StatCard>
-              <StatValue>{userData.score.toLocaleString()}</StatValue>
+              <StatValue>{score}</StatValue>
               <StatLabel>총 점수</StatLabel>
             </StatCard>
             <StatCard>
-              <StatValue>{stats?.commits}</StatValue>
+              <StatValue>{commits}</StatValue>
               <StatLabel>커밋</StatLabel>
             </StatCard>
             <StatCard>
-              <StatValue>{userData.PRs}</StatValue>
+              <StatValue>{pulls}</StatValue>
               <StatLabel>PR</StatLabel>
             </StatCard>
             <StatCard>
-              <StatValue>{stats?.issues}</StatValue>
+              <StatValue>{issues}</StatValue>
               <StatLabel>이슈</StatLabel>
             </StatCard>
             <StatCard>
-              <StatValue>{userData.contributes}</StatValue>
-              <StatLabel>기여</StatLabel>
+              <StatValue>{stars}</StatValue>
+              <StatLabel>스타</StatLabel>
             </StatCard>
           </StatsGrid>
         </ProfileInfo>

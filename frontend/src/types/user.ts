@@ -1,14 +1,14 @@
-type Commits = {
+export type Commit = {
   repo: string,
   branch: string,
   message: string,
-  commitedDate: string,
+  committedDate: string,
   url: string,
   deletions: number,
   changedFilesIfAvailable: number
 };
 
-type Contribution = {
+export type Contribution = {
   contributionDays: {
     date: string,
     contributionCount: number,
@@ -16,7 +16,7 @@ type Contribution = {
   }
 };
 
-type Language = {
+export type Language = {
   name: string,
   color: string,
   size: number,
@@ -37,7 +37,7 @@ export type User = {
     issues: number,
     score: number
     created_at: string,
-    commits: Commits[],
+    commits: Commit[],
     contributions: Contribution[],
     languages: Language[],
 }

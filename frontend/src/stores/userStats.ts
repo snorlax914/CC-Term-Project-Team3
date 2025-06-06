@@ -27,7 +27,6 @@ export const useStatsStore = create<StatsState>((set, get) => ({
     }));
 
     try {
-      console.log("📊 Fetching stats for:", username);
       const data = await getUserStats(username);
       set(() => ({
         userStats: data,

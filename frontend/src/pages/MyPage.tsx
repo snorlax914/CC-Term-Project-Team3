@@ -56,7 +56,17 @@ export default function MyPage() {
         <MainContent>
           <Container>
             {/* Profile Header */}
-            <ProfileCardSection />
+            <ProfileCardSection 
+              name={userStats.login}
+              avatarUrl={userStats.avatar_url}
+              githubId={userStats.github_id}
+              score={userStats.score}
+              commits={userStats.commit_count}
+              pulls={userStats.pulls}
+              issues={userStats.issues}
+              stars={userStats.stars}
+              forks={userStats.forks}
+            />
 
           <ScoreCharacter />
             <ContentGrid>
@@ -67,7 +77,7 @@ export default function MyPage() {
                 <ContributionHeatmap contributions={userStats.contributions}/>
 
                 {/* Recent Commits */}
-                <RecentCommits />
+                <RecentCommits commits={userStats.commits}/>
               </div>
 
               {/* Right Column */}

@@ -1,9 +1,33 @@
-import { userData } from "@/utils/mock";
+import { Commit } from "@/types/user";
 import styled from "@emotion/styled";
 import { Activity, Code, GitBranch } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/Card";
 
-export const RecentCommits = () => {
+interface RecentCommitsProps {
+  commits: Commit[];
+}
+
+const formatRelativeTime = (dateString: string): string => {
+  console.log("Formatting date:", dateString);
+  const now = new Date();
+  const date = new Date(dateString);
+  const diffMs = now.getTime() - date.getTime(); // 차이(ms)
+  const diffSec = Math.floor(diffMs / 1000);
+  const diffMin = Math.floor(diffSec / 60);
+  const diffHour = Math.floor(diffMin / 60);
+  const diffDay = Math.floor(diffHour / 24);
+
+  if (diffSec < 60) return '방금 전';
+  if (diffMin < 60) return `${diffMin}분 전`;
+  if (diffHour < 24) return `${diffHour}시간 전`;
+  return `${diffDay}일 전`;
+};
+
+
+export const RecentCommits = ({commits}: RecentCommitsProps) => {
+  
+
+  console.log("Recent commits:", commits);
   return (
     <Card>
       <CardHeader>
@@ -15,13 +39,12 @@ export const RecentCommits = () => {
       </CardHeader>
       <CardContent>
         <CommitList>
-          {userData.recentCommits.map((commit, index) => (
+          {commits.map((commit, index) => (
             <CommitCard key={index}>
               <CommitHeader>
-                <CommitSha>{commit.sha}</CommitSha>
-                <CommitDate>{commit.date}</CommitDate>
+                <CommitMessage>{commit.message}</CommitMessage>
+                <CommitDate>{formatRelativeTime(commit.committedDate)}</CommitDate>
               </CommitHeader>
-              <CommitMessage>{commit.message}</CommitMessage>
               <CommitMeta>
                 <CommitRepo>
                   <Code size={14} />
@@ -32,9 +55,8 @@ export const RecentCommits = () => {
                   {commit.branch}
                 </CommitBranch>
                 <CommitStats>
-                  <CommitStat style={{ color: "#10b981" }}>+{commit.additions}</CommitStat>
+                  <CommitStat style={{ color: "#10b981" }}>+{commit.changedFilesIfAvailable}</CommitStat>
                   <CommitStat style={{ color: "#ef4444" }}>-{commit.deletions}</CommitStat>
-                  <CommitStat style={{ color: "#6b7280" }}>{commit.files} files</CommitStat>
                 </CommitStats>
               </CommitMeta>
             </CommitCard>
@@ -68,16 +90,6 @@ const CommitHeader = styled.div`
   align-items: center;
   justify-content: space-between;
   margin-bottom: 0.5rem;
-`
-
-const CommitSha = styled.code`
-  background-color: #f3f4f6;
-  padding: 0.25rem 0.5rem;
-  border-radius: 0.25rem;
-  font-size: 0.75rem;
-  color: #4b5563;
-  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
-  margin-right: auto;
 `
 
 const CommitDate = styled.span`
