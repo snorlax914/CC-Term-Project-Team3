@@ -297,10 +297,21 @@ def get_friends(user_id):
     for fr in friendships:
         friend_user = fr.User if fr.User.id != current_user_id else None
         if friend_user:
+            contributions = asyncio.run(gh_manager.get_user_contributions(friend_user.login, friend_user.access_token)) or []
             friends.append({
                 'id': friend_user.id,
+                "github_id": friend_user.github_id,
                 'login': friend_user.login,
-                'avatar_url': friend_user.avatar_url
+                'avatar_url': friend_user.avatar_url,
+                "html_url": friend_user.html_url,
+                "repos_count": friend_user.repos_count,
+                "stars": friend_user.stars,
+                "forks": friend_user.forks,
+                "commit_count": friend_user.commits,
+                "pulls": friend_user.pulls,
+                "issues": friend_user.issues,
+                "score": friend_user.score,
+                "contributions": contributions
             })
     return jsonify(friends)
 
@@ -310,6 +321,17 @@ def search_users():
     if not query:
         return jsonify({'error': 'Query parameter is required'}), 400
     users = User.query.filter(func.lower(User.login).like(f'%{query.lower()}%')).all()
+    results = [{
+        'id': user.id,
+        'login': user.login,
+        'avatar_url': user.avatar_url,
+        'html_url': user.html_url
+    } for user in users]
+    return jsonify(results), 200
+
+@app.route('/all_users', methods=['GET'])
+def get_all_users():
+    users = User.query.all()
     results = [{
         'id': user.id,
         'login': user.login,
