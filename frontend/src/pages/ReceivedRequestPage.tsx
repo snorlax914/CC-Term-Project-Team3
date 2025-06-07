@@ -1,9 +1,144 @@
-import { ReceivedRequestsResponse } from "@/types/receivedRequests"
-import { mockReceivedRequests } from "@/utils/mock"
+import { acceptFriendRequest, rejectFriendRequest } from "@/api/friend"
+import { friendsStore } from "@/stores/friendsStore"
 import styled from "@emotion/styled"
-import { Check, Clock, UserPlus, X } from "lucide-react"
-import { useState } from "react"
+import { Check, UserPlus, X } from "lucide-react"
+import toast from "react-hot-toast"
+import { useNavigate } from "react-router-dom"
 import Layout from "../components/Layout"
+
+const ReceivedRequestsPage = () => {
+  // 상태 관리
+  const { requests, fetchFriends } = friendsStore.getState(); 
+  const navigate = useNavigate();
+
+  // 요청 수락 처리
+  const handleAccept = async (requestId: number) => {
+    try {
+      await acceptFriendRequest(requestId.toString())
+      toast.success("친구 요청을 수락했습니다!")
+      await fetchFriends() // 친구 목록 갱신
+      navigate(0);
+    }
+    catch (error) {
+      console.error("Error accepting friend request:", error)
+      toast.error("친구 요청 수락에 실패했습니다.")
+    }
+  }
+
+  const handleReject = async (requestId: number) => {
+    try {
+      await rejectFriendRequest(requestId.toString())
+      toast.success("친구 요청을 거절했습니다!")
+      await fetchFriends()
+      navigate(0);
+    }
+    catch (error) {
+      console.error("Error rejecting friend request:", error)
+      toast.error("친구 요청 거절에 실패했습니다.")
+    }
+  }
+
+  // 날짜 포맷팅 함수
+  const formatDate = (dateString: string) => {
+    const requestDate = new Date(dateString)
+    const now = new Date()
+    const diffTime = Math.abs(now.getTime() - requestDate.getTime())
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24))
+
+    if (diffDays === 0) {
+      return "오늘"
+    } else if (diffDays === 1) {
+      return "어제"
+    } else if (diffDays < 7) {
+      return `${diffDays}일 전`
+    } else if (diffDays < 30) {
+      return `${Math.floor(diffDays / 7)}주 전`
+    } else {
+      return `${Math.floor(diffDays / 30)}개월 전`
+    }
+  }
+
+  const totalCount = requests.length
+
+  return (
+    <Layout>
+      <PageContainer>
+        <MainContent>
+          <Container>
+            <PageHeader>
+              <div style={{ display: "flex", flexDirection: "column" }}>
+                <PageTitle>받은 친구 요청</PageTitle>
+                <PageDescription>다른 개발자들이 보낸 친구 요청을 확인해보세요!</PageDescription>
+              </div>
+              <StatsBar>
+                <StatItem>
+                  <StatValue>{totalCount}</StatValue>
+                  <StatLabel>요청</StatLabel>
+                </StatItem>
+              </StatsBar>
+            </PageHeader>
+
+
+            {requests.length > 0 ? (
+              <RequestGrid>
+                {requests.map((request) => (
+                  <RequestCard key={request.request_id} status={request.status}>
+                    <StatusBadge status={request.status}>
+                      {request.status === "pending"
+                      ? "대기 중"
+                      : request.status === "accepted"
+                      ? "수락됨"
+                      : request.status === "rejected"
+                      ? "거절됨"
+                      : ""}
+                      </StatusBadge>
+
+                    <CardHeader>
+                      <UserAvatar src={request.from_user.avatar_url} alt={request.from_user.login} />
+                      <UserName>{request.from_user.login}</UserName>
+                    </CardHeader>
+                    <CardContent>
+
+                      {request.status === "pending" ? (
+                        <ActionButtons>
+                          <AcceptButton onClick={() => handleAccept(request.request_id)}>
+                            <Check size={16} />
+                            수락
+                          </AcceptButton>
+                          <RejectButton onClick={() => handleReject(request.request_id)}>
+                            <X size={16} />
+                            거절
+                          </RejectButton>
+                        </ActionButtons>
+                      ) : (
+                        <ActionButtons>
+                          <AcceptButton disabled>{request.status === "accepted" ? "수락됨" : "거절됨"}</AcceptButton>
+                        </ActionButtons>
+                      )}
+                    </CardContent>
+                  </RequestCard>
+                ))}
+              </RequestGrid>
+            ) : (
+              <EmptyState>
+                <EmptyStateIcon>
+                  <UserPlus size={40} />
+                </EmptyStateIcon>
+                <EmptyStateTitle>받은 친구 요청이 없습니다</EmptyStateTitle>
+                <EmptyStateDescription>
+                  다른 개발자들이 보낸 친구 요청이 여기에 표시됩니다. 더 많은 개발자들과 네트워킹하려면 랭킹 페이지나
+                  검색 기능을 활용해보세요.
+                </EmptyStateDescription>
+              </EmptyState>
+            )}
+          </Container>
+        </MainContent>
+      </PageContainer>
+    </Layout>
+  )
+}
+
+export default ReceivedRequestsPage
 
 const PageContainer = styled.div`
   min-height: calc(100vh - 80px);
@@ -22,6 +157,8 @@ const Container = styled.div`
 
 const PageHeader = styled.div`
   margin-bottom: 2rem;
+  display: flex;
+  justify-content: space-between;
 `
 
 const PageTitle = styled.h1`
@@ -99,6 +236,7 @@ const RequestCard = styled.div<{ status: string }>`
 const CardHeader = styled.div`
   padding: 1.5rem 1.5rem 0;
   text-align: center;
+  margin-bottom: 1rem;
 `
 
 const UserAvatar = styled.img`
@@ -240,133 +378,3 @@ const EmptyStateDescription = styled.p`
   max-width: 28rem;
   margin: 0 auto;
 `
-
-const ReceivedRequestsPage = () => {
-  // 상태 관리
-  const [requests, setRequests] = useState<ReceivedRequestsResponse>(mockReceivedRequests);
-
-  // 요청 수락 처리
-  const handleAccept = (requestId: number) => {
-    setRequests(requests.map((req) => (req.request_id === requestId ? { ...req, status: "accepted" as const } : req)))
-  }
-
-  // 요청 거절 처리
-  const handleReject = (requestId: number) => {
-    setRequests(requests.map((req) => (req.request_id === requestId ? { ...req, status: "rejected" as const } : req)))
-  }
-
-  // 날짜 포맷팅 함수
-  const formatDate = (dateString: string) => {
-    const requestDate = new Date(dateString)
-    const now = new Date()
-    const diffTime = Math.abs(now.getTime() - requestDate.getTime())
-    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24))
-
-    if (diffDays === 0) {
-      return "오늘"
-    } else if (diffDays === 1) {
-      return "어제"
-    } else if (diffDays < 7) {
-      return `${diffDays}일 전`
-    } else if (diffDays < 30) {
-      return `${Math.floor(diffDays / 7)}주 전`
-    } else {
-      return `${Math.floor(diffDays / 30)}개월 전`
-    }
-  }
-
-  // 통계 계산
-  const pendingCount = requests.filter((req) => req.status === "pending").length
-  const acceptedCount = requests.filter((req) => req.status === "accepted").length
-  const totalCount = requests.length
-
-  return (
-    <Layout>
-      <PageContainer>
-        <MainContent>
-          <Container>
-            <PageHeader>
-              <PageTitle>받은 친구 요청</PageTitle>
-              <PageDescription>다른 개발자들이 보낸 친구 요청을 확인해보세요!</PageDescription>
-            </PageHeader>
-
-            <StatsBar>
-              <StatItem>
-                <StatValue>{totalCount}</StatValue>
-                <StatLabel>전체 요청</StatLabel>
-              </StatItem>
-              <StatItem>
-                <StatValue>{pendingCount}</StatValue>
-                <StatLabel>대기 중</StatLabel>
-              </StatItem>
-              <StatItem>
-                <StatValue>{acceptedCount}</StatValue>
-                <StatLabel>수락됨</StatLabel>
-              </StatItem>
-            </StatsBar>
-
-            {requests.length > 0 ? (
-              <RequestGrid>
-                {requests.map((request) => (
-                  <RequestCard key={request.request_id} status={request.status}>
-                    <StatusBadge status={request.status}>
-                      {request.status === "pending"
-                      ? "대기 중"
-                      : request.status === "accepted"
-                      ? "수락됨"
-                      : request.status === "rejected"
-                      ? "거절됨"
-                      : ""}
-                      </StatusBadge>
-
-                    <CardHeader>
-                      <UserAvatar src={request.from_user.avatar_url} alt={request.from_user.login} />
-                      <UserName>{request.from_user.login}</UserName>
-                    </CardHeader>
-
-                    <CardContent>
-                      <RequestDate>
-                        <Clock size={12} />
-                        1일 전에 요청
-                      </RequestDate>
-
-                      {request.status === "pending" ? (
-                        <ActionButtons>
-                          <AcceptButton onClick={() => handleAccept(request.request_id)}>
-                            <Check size={16} />
-                            수락
-                          </AcceptButton>
-                          <RejectButton onClick={() => handleReject(request.request_id)}>
-                            <X size={16} />
-                            거절
-                          </RejectButton>
-                        </ActionButtons>
-                      ) : (
-                        <ActionButtons>
-                          <AcceptButton disabled>{request.status === "accepted" ? "수락됨" : "거절됨"}</AcceptButton>
-                        </ActionButtons>
-                      )}
-                    </CardContent>
-                  </RequestCard>
-                ))}
-              </RequestGrid>
-            ) : (
-              <EmptyState>
-                <EmptyStateIcon>
-                  <UserPlus size={40} />
-                </EmptyStateIcon>
-                <EmptyStateTitle>받은 친구 요청이 없습니다</EmptyStateTitle>
-                <EmptyStateDescription>
-                  다른 개발자들이 보낸 친구 요청이 여기에 표시됩니다. 더 많은 개발자들과 네트워킹하려면 랭킹 페이지나
-                  검색 기능을 활용해보세요.
-                </EmptyStateDescription>
-              </EmptyState>
-            )}
-          </Container>
-        </MainContent>
-      </PageContainer>
-    </Layout>
-  )
-}
-
-export default ReceivedRequestsPage

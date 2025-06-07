@@ -1,4 +1,6 @@
+import { Toaster } from "react-hot-toast"
 import { Route, Routes } from "react-router-dom"
+import FriendsListPage from "./pages/FriendListPage"
 import HomePage from "./pages/HomePage"
 import LoginCallback from "./pages/LoginCallBack"
 import MorePage from "./pages/MorePage"
@@ -10,7 +12,9 @@ import UserPage from "./pages/UserPage"
 
 function App() {
   return (
-    <Routes>
+    <>
+      <Toaster />
+      <Routes>
       <Route path="/home" element={<HomePage />} />
       <Route path="/search" element={<SearchPage />} />
       <Route path="/user/:username" element={<UserPage />} />
@@ -19,7 +23,9 @@ function App() {
       <Route path="/more" element={<MorePage />} />
       <Route path="/" element={<LoginCallback />} />
       <Route path="/requests" element={<ReceivedRequestsPage />} />
+      <Route path="/friends" element={<FriendsListPage />} />
     </Routes>
+    </>
   )
 }
 

@@ -41,6 +41,7 @@ export default function MyPage() {
               issues={userStats.issues}
               stars={userStats.stars}
               forks={userStats.forks}
+              id={userStats.id}
             />
 
             <ScoreCharacter score={userStats.score} />

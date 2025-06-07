@@ -91,7 +91,7 @@ export const ScoreCharacter = ({score} : {score: number}) => {
      <CharacterCard>
        <CharacterCardBackground />
        <CharacterHeader>
-         <CharacterTitle>내 캐릭터</CharacterTitle>
+         <CharacterTitle>캐릭터</CharacterTitle>
        </CharacterHeader>
        <CharacterAvatar>{tier?.emoji}</CharacterAvatar>
        <CharacterName>{tier?.name}</CharacterName>

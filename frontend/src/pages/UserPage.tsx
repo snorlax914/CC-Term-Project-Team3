@@ -22,7 +22,7 @@ export default function MyPage() {
     const fetchStats = async () => {
       try {
         const data = await getUserStats(username);
-        setUserStats(data); // ✅ 상태에 저장
+        setUserStats(data);
         console.log("Fetched stats for:", username);
       } catch (error) {
         console.error("Error fetching user stats:", error);
@@ -49,6 +49,8 @@ export default function MyPage() {
               issues={userStats.issues}
               stars={userStats.stars}
               forks={userStats.forks}
+              friendshipStatus={userStats.friendship_status}
+              id={userStats.id}
             />
 
             <ScoreCharacter score={userStats.score} />

@@ -1,6 +1,7 @@
+import { isValidToken } from "@/utils/token"
 import styled from "@emotion/styled"
 import { BarChart3, Github } from "lucide-react"
-import type { ReactNode } from "react"
+import { type ReactNode } from "react"
 import { Link, useLocation } from "react-router-dom"
 
 const Header = styled.header`
@@ -61,13 +62,14 @@ interface LayoutProps {
 
 export default function Layout({ children }: LayoutProps) {
   const location = useLocation()
+  const isValid = isValidToken();
 
   return (
     <div>
       <Header>
         <Container>
           <HeaderContent>
-            <LogoContainer to="/">
+            <LogoContainer to="/home">
               <LogoIconWrapper>
                 <Github size={40} color="#1f2937" />
                 <BarChart3
@@ -83,6 +85,7 @@ export default function Layout({ children }: LayoutProps) {
               <LogoText>GitRank</LogoText>
             </LogoContainer>
 
+            { isValid && 
             <Navigation>
               <NavLink to="/my-page" $active={location.pathname === "/my-page"}>
                 마이페이지
@@ -90,16 +93,11 @@ export default function Layout({ children }: LayoutProps) {
               <NavLink to="/search" $active={location.pathname === "/search"}>
                 친구 검색
               </NavLink>
-              <NavLink to="/rankings" $active={location.pathname === "/rankings"}>
-                랭킹페이지
-              </NavLink>
-              <NavLink to="/more" $active={location.pathname === "/more"}>
-                기타
-              </NavLink>
-              <NavLink to="/requests" $active={location.pathname === "/requests"}>
-                친구요청
+              <NavLink to="/friends" $active={location.pathname === "/friends"}>
+                친구
               </NavLink>
             </Navigation>
+          }
           </HeaderContent>
         </Container>
       </Header>

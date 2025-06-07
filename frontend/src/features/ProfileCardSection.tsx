@@ -1,9 +1,14 @@
+import { sendFriendRequest } from "@/api/friend";
 import { userData } from "@/utils/mock";
 import styled from "@emotion/styled";
 import { UserPlus } from "lucide-react";
+import { useEffect, useState } from "react";
+import toast from "react-hot-toast";
+import { useNavigate } from "react-router-dom";
 
 interface ProfileCardProps {
   avatarUrl: string;
+  id?: number;
   name: string;
   githubId: string;
   stars: number;
@@ -11,10 +16,12 @@ interface ProfileCardProps {
   commits: number;
   issues: number;
   pulls: number;
+  friendshipStatus?: "pending" | "accepted" | "null";
 };
 
 export const ProfileCardSection = ({
   avatarUrl,
+  id,
   name,
   githubId,
   stars,
@@ -22,7 +29,47 @@ export const ProfileCardSection = ({
   commits,
   issues,
   pulls,
+  friendshipStatus = "null"
 }: ProfileCardProps) => {
+
+  const [text, setText] = useState<string>("친구 추가");
+  const [disabled, setDisabled] = useState<boolean>(false);
+  const navigate = useNavigate();
+
+  const makeText = () => {
+    if (friendshipStatus === "pending") {
+      setText("대기 중");
+      setDisabled(true);
+    } else if (friendshipStatus === "accepted") {
+      setText("친구");
+      setDisabled(true);
+    }
+  };
+
+  useEffect(() => {
+    makeText();
+  }, [friendshipStatus]);
+
+
+
+  const handleFriendRequest = async () => {
+    if (!id) {
+      toast.error("유효하지 않은 사용자 ID입니다.");
+      return;
+    }
+      try {
+      await sendFriendRequest(id?.toLocaleString());
+      toast.success("친구 요청을 보냈습니다!");
+      navigate(0);
+      return;
+      } catch (error) {
+        console.error("Error sending friend request:", error);
+        toast.error("친구 요청에 실패했습니다.");
+      }
+  }
+
+  console.log(friendshipStatus);
+
   return (
     <ProfileCard>
       <ProfileCardContent>
@@ -36,10 +83,13 @@ export const ProfileCardSection = ({
               <ProfileName>{name}</ProfileName>
               <ProfileUsername>@{githubId}</ProfileUsername>
             </ProfileNameSection>
-            <SettingsButton>
+            { friendshipStatus !== "null" ? (
+            <SettingsButton onClick={handleFriendRequest} disabled={disabled}>
               <UserPlus size={16} />
-              <span>친구 추가</span>
+              <span>{text}</span>
             </SettingsButton>
+            ) : null
+          }
           </ProfileHeader>
 
 

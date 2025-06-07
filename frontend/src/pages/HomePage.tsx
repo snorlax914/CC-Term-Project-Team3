@@ -1,4 +1,7 @@
 import { login } from "@/api/auth";
+import { friendsStore } from "@/stores/friendsStore";
+import { useAuthStore } from "@/stores/useAuthStore";
+import { useStatsStore } from "@/stores/userStats";
 import { isValidToken } from "@/utils/token";
 import styled from "@emotion/styled";
 import { useState } from "react";
@@ -7,6 +10,7 @@ import Layout from "../components/Layout";
 
 export default function HomePage() {
   const [isValid, setIsValid] = useState(isValidToken());
+
 
   const handleLogin = async () => {
     const res = await login();
@@ -19,9 +23,13 @@ export default function HomePage() {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem("access_token");
-    localStorage.removeItem("oauth_state");
-    window.location.href = "/";
+    localStorage.clear();
+    localStorage.removeItem("friends-storage");
+    localStorage.removeItem("auth-storage");
+    friendsStore.getState().clearFriends(); // 친구 목록 + 요청 초기화
+    useStatsStore.getState().clearStats(); // 내 통계 초기화
+    useAuthStore.getState().logout();
+    window.location.href = "/home";
     setIsValid(false);
   };
   

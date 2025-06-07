@@ -1,6 +1,6 @@
 "use client"
 
-import { keyframes } from "@emotion/react"
+import { css, keyframes } from "@emotion/react"
 import styled from "@emotion/styled"
 import { Activity, BarChart3, CheckCircle, GitCommit, GitFork, Github, Loader2, Star, Trophy, User } from "lucide-react"
 import type React from "react"
@@ -94,7 +94,9 @@ const LoadingOverlay = styled.div`
   align-items: center;
   justify-content: center;
   z-index: 1000;
+  ${css`
   animation: ${fadeIn} 0.5s ease-out;
+  `}
 `
 
 const LoadingContainer = styled.div`
@@ -122,7 +124,9 @@ const LogoBackground = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  animation: ${pulse} 2s infinite;
+  ${css`
+    animation: ${pulse} 2s infinite;
+  `}
   backdrop-filter: blur(10px);
   border: 2px solid rgba(255, 255, 255, 0.3);
 `
@@ -150,21 +154,27 @@ const LoadingSpinner = styled.div`
   border: 3px solid transparent;
   border-top-color: rgba(255, 255, 255, 0.8);
   border-radius: 50%;
+  ${css`
   animation: ${rotate} 1s linear infinite;
+  `}
 `
 
 const Title = styled.h1`
   font-size: 2rem;
   font-weight: 700;
   margin-bottom: 0.5rem;
-  animation: ${slideUp} 0.6s ease-out;
+  ${css`
+    animation: ${slideUp} 0.6s ease-out;
+  `}
 `
 
 const Subtitle = styled.p`
   font-size: 1.125rem;
   opacity: 0.9;
   margin-bottom: 3rem;
-  animation: ${slideUp} 0.6s ease-out 0.1s backwards;
+  ${css`
+    animation: ${slideUp} 0.6s ease-out 0.05s backwards;
+  `}
 `
 
 const LoadingStepsContainer = styled.div`
@@ -263,7 +273,9 @@ const StepProgressFill = styled.div<{ progress: number }>`
     right: 0;
     bottom: 0;
     background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.6) 50%, transparent 100%);
-    animation: ${progressWave} 2s infinite;
+    ${css`
+      animation: ${progressWave} 2s infinite;
+    `}
   }
 `
 
@@ -279,7 +291,9 @@ const DataPoint = styled.div<{ delay: number }>`
   display: flex;
   flex-direction: column;
   align-items: center;
+  ${css`
   animation: ${dataFlow} 3s infinite;
+  `}
   animation-delay: ${(props) => props.delay}s;
 `
 

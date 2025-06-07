@@ -4,7 +4,7 @@ import axios, { AxiosInstance } from 'axios';
 import { queryClient } from '../main';
 
 const apiInstance: AxiosInstance = axios.create({
-  baseURL: `http://3.107.76.196`,
+  baseURL: `http://3.107.76.196/api`,
   headers: {
     'Content-Type': 'application/json',
   },

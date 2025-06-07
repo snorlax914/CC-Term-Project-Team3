@@ -37,6 +37,7 @@ export type User = {
     issues: number,
     score: number
     created_at: string,
+    friendship_status: "pending" | "accepted" | "null",
     commits: Commit[],
     contributions: Contribution[],
     languages: Language[],
