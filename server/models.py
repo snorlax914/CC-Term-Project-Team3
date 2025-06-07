@@ -22,7 +22,7 @@ class User(db.Model):
     pulls = db.Column(db.Integer, default=0, nullable=True)
     issues = db.Column(db.Integer, default=0, nullable=True)
     languages = db.Column(db.JSON, default=dict, nullable=True)
-    score = db.Column(db.Float, default=0, nullable=True)
+    score = db.Column(db.Integer, default=0, nullable=True)
 
     created_at = db.Column(db.DateTime, server_default=db.func.now())
     
@@ -34,7 +34,7 @@ class User(db.Model):
         'forks':   0.5
     }
     min_raw_score = 0.0
-    max_raw_score = 15000.0
+    max_raw_score = 500.0
     
     def __init__(self, github_id, login, access_token, avatar_url, html_url):
         self.github_id = github_id
@@ -95,7 +95,7 @@ def update_stat(user_id, github_manager: Github):
     
     raw = user.compute_raw_score()
     user.raw_score = raw
-    user.score = user.normalize_score(raw)
+    user.score = int(user.normalize_score(raw))
     
     db.session.commit()
 
