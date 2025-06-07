@@ -125,6 +125,12 @@ def callback():
 @token_required
 def get_user(user_id, login):
     user = User.query.filter_by(login=login).first()
+    friendship_status = Friend.query.filter(
+        or_(
+            and_(Friend.user_id == user_id, Friend.friend_id == user.id),
+            and_(Friend.user_id == user.id, Friend.friend_id == user_id)
+        )
+    ).first()
     if not user:
         return jsonify({'error': 'User not found'}), 404
     start_date = request.args.get('start_date')
@@ -147,6 +153,7 @@ def get_user(user_id, login):
             "issues": user.issues,
             "languages": user.languages,
             "score": user.score,
+            "friendship_status": friendship_status.status if friendship_status else None,
             "contributions": contributions,
             "commits": commits,
             "created_at": user.created_at.isoformat()
