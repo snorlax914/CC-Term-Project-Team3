@@ -20,7 +20,7 @@ const LoginCallback = () => {
       .then(({ access_token, user }) => {
         localStorage.setItem("access_token", access_token);
         setAuth(access_token, user);
-        window.location.href = "/home";
+        window.location.href = "/";
       })
       .catch((err) => {
         console.error("OAuth 처리 실패", err);
