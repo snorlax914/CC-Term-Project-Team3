@@ -38,7 +38,7 @@ export const ScoreCharacter = ({score} : {score: number}) => {
         <ScoreIcon>
           <Trophy size={24} />
         </ScoreIcon>
-        <ScoreTitle>나의 개발 점수</ScoreTitle>
+        <ScoreTitle>개발 점수</ScoreTitle>
       </ScoreHeader>
 
       <ScoreValue>{score.toLocaleString()}</ScoreValue>
@@ -112,7 +112,7 @@ export const ScoreCharacter = ({score} : {score: number}) => {
             <NextTierEmoji>{nextTier.emoji}</NextTierEmoji>
             <NextTierText>
               <NextTierName textColor={tier?.color || "#000"}>다음 티어: {nextTier?.name}</NextTierName>
-              <NextTierScore textColor={tier?.color || "#000"}>필요 점수: {nextTier?.minScore.toLocaleString()}</NextTierScore>
+              <NextTierScore textColor={tier?.color || "#000"}>필요 점수: {(nextTier?.minScore - score).toLocaleString()}</NextTierScore>
             </NextTierText>
           </NextTierInfo>
           <NextTierIcon textColor={tier?.color || "#000"}>

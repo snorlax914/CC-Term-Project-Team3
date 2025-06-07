@@ -1,5 +1,6 @@
 import { userData } from "@/utils/mock";
 import styled from "@emotion/styled";
+import { UserPlus } from "lucide-react";
 
 interface ProfileCardProps {
   avatarUrl: string;
@@ -10,7 +11,6 @@ interface ProfileCardProps {
   commits: number;
   issues: number;
   pulls: number;
-  score: number;
 };
 
 export const ProfileCardSection = ({
@@ -22,7 +22,6 @@ export const ProfileCardSection = ({
   commits,
   issues,
   pulls,
-  score
 }: ProfileCardProps) => {
   return (
     <ProfileCard>
@@ -37,9 +36,12 @@ export const ProfileCardSection = ({
               <ProfileName>{name}</ProfileName>
               <ProfileUsername>@{githubId}</ProfileUsername>
             </ProfileNameSection>
+            <SettingsButton>
+              <UserPlus size={16} />
+              <span>친구 추가</span>
+            </SettingsButton>
           </ProfileHeader>
 
-          {/* <ProfileBio>{userData.bio}</ProfileBio> */}
 
           <StatsGrid>
             <StatCard>
@@ -100,6 +102,23 @@ const ProfileAvatarWrapper = styled.div`
   }
 `
 
+const SettingsButton = styled.button`
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background-color: #d1fae5;
+  border: 1px solid #6ee7b7;
+  color: #047857;
+  padding: 0.5rem 1rem;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  cursor: pointer;
+  
+  &:hover {
+    background-color: #a7f3d0;
+  }
+`
+
 const ProfileAvatar = styled.img`
   width: 120px;
   height: 120px;
@@ -135,35 +154,6 @@ const ProfileName = styled.h1`
 const ProfileUsername = styled.p`
   color: #6b7280;
   font-size: 1.125rem;
-`
-
-const ProfileBio = styled.p`
-  color: #4b5563;
-  margin-bottom: 1rem;
-  line-height: 1.5;
-`
-
-const ProfileMetaList = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1rem;
-  margin-bottom: 1.5rem;
-  color: #6b7280;
-  font-size: 0.875rem;
-`
-
-const ProfileMetaItem = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-`
-
-const ProfileLink = styled.a`
-  color: #2563eb;
-  
-  &:hover {
-    text-decoration: underline;
-  }
 `
 
 const StatsGrid = styled.div`

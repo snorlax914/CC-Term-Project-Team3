@@ -1,14 +1,15 @@
-import { LanguageStat } from "@/api/stats";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/Card";
+import { Language } from "@/types/user";
 import styled from "@emotion/styled";
 
-interface LanguageStatWithPercentage extends LanguageStat {
+interface LanguageStatWithPercentage extends Language {
   percentage: number;
 }
 
 const getTopLanguagesWithPercentage = (
-  languages: LanguageStat[],
+  languages: Language[],
 ): LanguageStatWithPercentage[] => {
+  if (!Array.isArray(languages) || languages.length === 0) return [];
   const sorted = [...languages].sort((a, b) => b.size - a.size);
   const top = sorted.slice(0, 5);
   const total = top.reduce((sum, lang) => sum + lang.size, 0);
@@ -19,7 +20,7 @@ const getTopLanguagesWithPercentage = (
   }));
 };
 
-export const LanguageGraphSection = ({ languages }: { languages: LanguageStat[] })=> {
+export const LanguageGraphSection = ({ languages }: { languages: Language[] })=> {
 
   const topLanguages: LanguageStatWithPercentage[] = getTopLanguagesWithPercentage(languages);
   console.log("Top Languages with Percentage:", languages);
