@@ -267,6 +267,61 @@ class Github:
         
         return result
 
+    async def get_repo_info(self, access_token):
+        query = """
+        query($first: Int!, $after: String) {
+            viewer {
+                repositories(first: $first, after: $after) {
+                    nodes {
+                        description
+                        forkCount
+                        name
+                        stargazerCount
+                        object(expression: "HEAD:README.md") {
+                            ... on Blob {
+                                text
+                            }
+                        }
+                    }
+                    pageInfo {
+                        endCursor
+                        hasNextPage
+                    }
+                }
+            }
+        }
+        """
+        variables = {
+            'first': 100,
+            'after': None
+        }
+        has_next_page = True
+        repos = []
+        async with aiohttp.ClientSession() as session:
+            while has_next_page:
+                try:
+                    response = await self.handle_graphql(session, access_token, json={"query": query, "variables": variables})
+                    has_next_page = response['data']['viewer']['repositories']['pageInfo']['hasNextPage']
+                    variables['after'] = response['data']['viewer']['repositories']['pageInfo']['endCursor']
+                    
+                    for node in response['data']['viewer']['repositories']['nodes']:
+                        repo_info = {
+                            'name': node['name'],
+                            'description': node.get('description', ''),
+                            'forks': node['forkCount'],
+                            'stars': node['stargazerCount'],
+                            'readme': node['object']['text'] if node['object'] else ''
+                        }
+                        repos.append(repo_info)
+                except KeyError as e:
+                    print(f"Malformed response missing expected field: {e}")
+                    break
+                except Exception as e:
+                    print(traceback.format_exc())
+                    print(f"Request failed: {e}")
+                    break
+        return repos
+
 # TESTING CODE
 from dotenv import load_dotenv
 import os
@@ -277,7 +332,7 @@ GITHUB_TOKEN = os.getenv('GITHUB_TOKEN', None)
 async def main():
     gh = Github()
     # var = await gh.get_user_events("KenesYerassyl", GITHUB_TOKEN, datetime.datetime.now() - datetime.timedelta(days=10), datetime.datetime.now())
-    var = await gh.get_user_comits(GITHUB_TOKEN, "MDQ6VXNlcjY4NzAwODcy")
+    var = await gh.get_repo_info(GITHUB_TOKEN)
     # async with aiohttp.ClientSession() as session:
     #     var = await gh.handle_request(endpoint="/user", access_token=GITHUB_TOKEN, session=session)
     print(var)
