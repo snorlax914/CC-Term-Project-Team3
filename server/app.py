@@ -46,13 +46,13 @@ def token_required(f):
     
     return decorated_function
 
-@app.route('/auth/refresh', methods=['POST'])
+@app.route('/api/auth/refresh', methods=['POST'])
 @token_required
 def refresh_token(user_id):
     new_token = create_access_token(user_id, app)
     return jsonify({'access_token': new_token})
 
-@app.route('/login')
+@app.route('/api/login')
 def login():
     state = str(uuid.uuid4())
     params = urlencode({
@@ -121,7 +121,7 @@ def callback():
         print(traceback.format_exc())
         return f"Error fetching user info: {str(e)}", 500
 
-@app.route('/user/<string:login>', methods=['GET'])
+@app.route('/api/user/<string:login>', methods=['GET'])
 @token_required
 def get_user(user_id, login):
     user = User.query.filter_by(login=login).first()
@@ -162,7 +162,7 @@ def get_user(user_id, login):
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-@app.route('/friends/request', methods=['POST'])
+@app.route('/api/friends/request', methods=['POST'])
 @token_required
 def send_friend_request(user_id):
     data = request.get_json()
@@ -202,7 +202,7 @@ def send_friend_request(user_id):
         'request_id': new_request.id
     }), 200
 
-@app.route('/friends/requests', methods=['GET'])
+@app.route('/api/friends/requests', methods=['GET'])
 @token_required
 def get_friend_requests(user_id):
     current_user_id = user_id
@@ -224,7 +224,7 @@ def get_friend_requests(user_id):
         'status': fr.Friend.status
     } for fr in pending_requests])
 
-@app.route('/friends/requests/<int:request_id>/accept', methods=['PUT'])
+@app.route('/api/friends/requests/<int:request_id>/accept', methods=['PUT'])
 @token_required
 def accept_friend_request(user_id, request_id):
     current_user_id = user_id
@@ -244,7 +244,7 @@ def accept_friend_request(user_id, request_id):
         'friend_id': friend_request.user_id
     })
 
-@app.route('/friends/requests/<int:request_id>/reject', methods=['PUT'])
+@app.route('/api/friends/requests/<int:request_id>/reject', methods=['PUT'])
 @token_required
 def reject_friend_request(user_id, request_id):
     current_user_id = user_id
@@ -261,7 +261,7 @@ def reject_friend_request(user_id, request_id):
 
     return jsonify({'message': 'Friend request rejected'})
 
-@app.route('/friends/<int:friend_id>/delete', methods=['DELETE'])
+@app.route('/api/friends/<int:friend_id>/delete', methods=['DELETE'])
 @token_required
 def delete_friend(user_id, friend_id):
     current_user_id = user_id
@@ -285,7 +285,7 @@ def delete_friend(user_id, friend_id):
         'deleted_friend_id': friend_id
     })
 
-@app.route('/friends', methods=['GET'])
+@app.route('/api/friends', methods=['GET'])
 @token_required
 def get_friends(user_id):
     current_user_id = user_id
@@ -320,7 +320,7 @@ def get_friends(user_id):
             })
     return jsonify(friends)
 
-@app.route('/search', methods=['GET'])
+@app.route('/api/search', methods=['GET'])
 def search_users():
     query = request.args.get('query', '').strip()
     if not query:
@@ -334,7 +334,7 @@ def search_users():
     } for user in users]
     return jsonify(results), 200
 
-@app.route('/all_users', methods=['GET'])
+@app.route('/api/all_users', methods=['GET'])
 def get_all_users():
     users = User.query.all()
     results = [{
