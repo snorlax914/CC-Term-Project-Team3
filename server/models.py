@@ -22,7 +22,7 @@ class User(db.Model):
     pulls = db.Column(db.Integer, default=0, nullable=True)
     issues = db.Column(db.Integer, default=0, nullable=True)
     languages = db.Column(db.JSON, default=dict, nullable=True)
-    score = db.Column(db.Integer, default=0, nullable=True)
+    score = db.Column(db.Float, default=0, nullable=True)
 
     created_at = db.Column(db.DateTime, server_default=db.func.now())
     
