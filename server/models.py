@@ -26,6 +26,16 @@ class User(db.Model):
 
     created_at = db.Column(db.DateTime, server_default=db.func.now())
     
+    weights = {
+        'commits': 1.0,
+        'pulls':   1.5,
+        'issues':  1.2,
+        'stars':   0.5,
+        'forks':   0.5
+    }
+    min_raw_score = 0.0
+    max_raw_score = 15000.0
+    
     def __init__(self, github_id, login, access_token, avatar_url, html_url):
         self.github_id = github_id
         self.login = login
@@ -35,6 +45,23 @@ class User(db.Model):
 
     def __repr__(self):
         return f'<User {self.login}>'
+    
+    def compute_raw_score(self) -> float:
+        return (
+            (self.commits or 0) * self.weights['commits'] +
+            (self.pulls   or 0) * self.weights['pulls']   +
+            (self.issues  or 0) * self.weights['issues']  +
+            (self.stars   or 0) * self.weights['stars']   +
+            (self.forks   or 0) * self.weights['forks']
+        )
+
+    def normalize_score(self, raw_score: float) -> float:
+        if raw_score <= self.min_raw_score:
+            return 0.0
+        if raw_score >= self.max_raw_score:
+            return 100.0
+        normalized = 100.0 * (raw_score - self.min_raw_score) / (self.max_raw_score - self.min_raw_score)
+        return normalized
 
 def update_stat(user_id, github_manager: Github):
     user = User.query.get(user_id)
@@ -62,6 +89,10 @@ def update_stat(user_id, github_manager: Github):
     user.issues = stats['issues']
     user.languages = stats['languages']
     user.score = stats['repos_count'] + stats['stars'] + stats['forks'] + stats['commits'] + stats['pulls'] + stats['issues']
+    
+    raw = user.compute_raw_score()
+    user.raw_score = raw
+    user.score = user.normalize_score(raw)
     
     db.session.commit()
 
