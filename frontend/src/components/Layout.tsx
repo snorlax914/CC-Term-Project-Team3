@@ -69,7 +69,7 @@ export default function Layout({ children }: LayoutProps) {
       <Header>
         <Container>
           <HeaderContent>
-            <LogoContainer to="/home">
+            <LogoContainer to="/">
               <LogoIconWrapper>
                 <Github size={40} color="#1f2937" />
                 <BarChart3

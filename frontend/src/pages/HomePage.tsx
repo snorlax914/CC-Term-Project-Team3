@@ -29,7 +29,7 @@ export default function HomePage() {
     friendsStore.getState().clearFriends(); // 친구 목록 + 요청 초기화
     useStatsStore.getState().clearStats(); // 내 통계 초기화
     useAuthStore.getState().logout();
-    window.location.href = "/home";
+    window.location.href = "/";
     setIsValid(false);
   };
   
