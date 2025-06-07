@@ -21,8 +21,6 @@ export default function MyPage() {
     }
   }, [user?.login]);
 
-  console.log("User stats:", userStats);
-
   if (loading) return <UserPageLoadingScreen isLoading={true} />;
   if (error) return <div>{error}</div>;
   if (!userStats) return <div>데이터 없음</div>;

@@ -1,7 +1,7 @@
-import { ContributionsResponse } from "@/api/stats";
 import {
   Card, CardContent, CardDescription, CardHeader, CardTitle
 } from "@/components/Card";
+import { Contribution } from "@/types/user";
 import styled from "@emotion/styled";
 import { Activity } from "lucide-react";
 import { useState } from "react";
@@ -9,7 +9,7 @@ import { useState } from "react";
 export const ContributionHeatmap = ({
   contributions,
 }: {
-  contributions: ContributionsResponse | null;
+  contributions: Contribution[] | null;
 }) => {
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [selectedCount, setSelectedCount] = useState<number | null>(null);

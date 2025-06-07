@@ -4,7 +4,7 @@ import styled from "@emotion/styled";
 import { Search } from "lucide-react";
 import type React from "react";
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import Layout from "../components/Layout";
 
 export default function SearchPage() {
@@ -12,8 +12,6 @@ export default function SearchPage() {
   const [results, setResults] = useState<SearchUserResponse | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-
-  const navigate = useNavigate();
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault()

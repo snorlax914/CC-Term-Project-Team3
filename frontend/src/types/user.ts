@@ -8,12 +8,14 @@ export type Commit = {
   changedFilesIfAvailable: number
 };
 
+export type ContrubutionDay = {
+  date: string,
+  contributionCount: number,
+  color: string
+}
+
 export type Contribution = {
-  contributionDays: {
-    date: string,
-    contributionCount: number,
-    color: string
-  }
+  contributionDays: ContrubutionDay[],
 };
 
 export type Language = {

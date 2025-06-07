@@ -38,26 +38,6 @@ const ReceivedRequestsPage = () => {
     }
   }
 
-  // 날짜 포맷팅 함수
-  const formatDate = (dateString: string) => {
-    const requestDate = new Date(dateString)
-    const now = new Date()
-    const diffTime = Math.abs(now.getTime() - requestDate.getTime())
-    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24))
-
-    if (diffDays === 0) {
-      return "오늘"
-    } else if (diffDays === 1) {
-      return "어제"
-    } else if (diffDays < 7) {
-      return `${diffDays}일 전`
-    } else if (diffDays < 30) {
-      return `${Math.floor(diffDays / 7)}주 전`
-    } else {
-      return `${Math.floor(diffDays / 30)}개월 전`
-    }
-  }
-
   const totalCount = requests.length
 
   return (
@@ -257,16 +237,6 @@ const UserName = styled.h3`
 
 const CardContent = styled.div`
   padding: 0 1.5rem 1.5rem;
-`
-
-const RequestDate = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.25rem;
-  font-size: 0.75rem;
-  color: #9ca3af;
-  margin-bottom: 1rem;
 `
 
 const ActionButtons = styled.div`

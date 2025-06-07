@@ -57,7 +57,7 @@ type TabKey = "all" | "ranking" | "activity" | "repos"
 
 
 const FriendsRankingPage = () => {
-  const { friends, fetchFriends, loading } = friendsStore();
+  const { friends, fetchFriends } = friendsStore();
   const user = useAuthStore.getState().user;
 
   useEffect(() => {

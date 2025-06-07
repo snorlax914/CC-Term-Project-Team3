@@ -68,8 +68,6 @@ export const ProfileCardSection = ({
       }
   }
 
-  console.log(friendshipStatus);
-
   return (
     <ProfileCard>
       <ProfileCardContent>

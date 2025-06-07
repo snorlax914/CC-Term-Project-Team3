@@ -245,13 +245,6 @@ const CharacterDescription = styled.p`
   line-height: 1.4;
 `
 
-const CharacterStats = styled.div`
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1rem;
-  margin-top: 1.5rem;
-`
-
 const ScoreCharacterSection = styled.div`
   display: grid;
   grid-template-columns: 1fr;
@@ -291,16 +284,6 @@ const CharacterTitle = styled.h2`
   font-weight: 700;
   color: #7c2d12;
   margin-bottom: 0.5rem;
-`
-
-const CharacterLevel = styled.div`
-  display: inline-block;
-  background-color: rgba(124, 45, 18, 0.1);
-  color: #7c2d12;
-  padding: 0.25rem 0.75rem;
-  border-radius: 9999px;
-  font-size: 0.875rem;
-  font-weight: 600;
 `
 
 const CharacterAvatar = styled.div`

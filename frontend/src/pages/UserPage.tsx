@@ -23,9 +23,7 @@ export default function MyPage() {
       try {
         const data = await getUserStats(username);
         setUserStats(data);
-        console.log("Fetched stats for:", username);
-      } catch (error) {
-        console.error("Error fetching user stats:", error);
+      } catch {
         setUserStats(null);
       }
     };

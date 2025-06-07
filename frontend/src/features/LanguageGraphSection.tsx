@@ -23,7 +23,6 @@ const getTopLanguagesWithPercentage = (
 export const LanguageGraphSection = ({ languages }: { languages: Language[] })=> {
 
   const topLanguages: LanguageStatWithPercentage[] = getTopLanguagesWithPercentage(languages);
-  console.log("Top Languages with Percentage:", languages);
   return (
     <Card>
       <CardHeader>

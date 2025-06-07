@@ -8,7 +8,6 @@ interface RecentCommitsProps {
 }
 
 const formatRelativeTime = (dateString: string): string => {
-  console.log("Formatting date:", dateString);
   const now = new Date();
   const date = new Date(dateString);
   const diffMs = now.getTime() - date.getTime(); // 차이(ms)
