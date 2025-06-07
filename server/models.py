@@ -42,6 +42,9 @@ class User(db.Model):
         self.access_token = access_token
         self.avatar_url = avatar_url
         self.html_url = html_url
+        
+        self.raw_score = 0.0
+        self.score = 0.0
 
     def __repr__(self):
         return f'<User {self.login}>'
