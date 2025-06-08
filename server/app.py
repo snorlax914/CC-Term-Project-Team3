@@ -92,6 +92,7 @@ def callback():
         
         user_info = asyncio.run(gh_manager.get_user_info(access_token))
         user = User.query.filter_by(github_id=user_info['githubId']).first()
+        print(f"User info: {user_info}")
         if not user:
             user = User(
                 github_id=user_info['githubId'],
@@ -103,6 +104,9 @@ def callback():
             db.session.add(user)
         else:
             user.access_token = access_token
+
+        if user.id is None:
+            return jsonify({'error': 'Invalid or missing user ID'}), 400
 
         update_stat(user.id, gh_manager)
         db.session.commit()
@@ -125,6 +129,10 @@ def callback():
 @token_required
 def get_user(user_id, login):
     user = User.query.filter_by(login=login).first()
+    
+    if not user:
+        return jsonify({'error': 'User not found'}), 404
+
     friendship_status = Friend.query.filter(
         or_(
             and_(Friend.user_id == user_id, Friend.friend_id == user.id),

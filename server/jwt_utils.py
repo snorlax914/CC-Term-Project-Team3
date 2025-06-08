@@ -22,6 +22,7 @@ def verify_access_token(token, app):
         )
         return payload['user_id']
     except jwt.ExpiredSignatureError:
-        return None
+        app.logger.warning("Token expired")
     except jwt.InvalidTokenError:
-        return None
+        app.logger.warning("Invalid token")
+    return None

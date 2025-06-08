@@ -332,7 +332,7 @@ GITHUB_TOKEN = os.getenv('GITHUB_TOKEN', None)
 async def main():
     gh = Github()
     # var = await gh.get_user_events("KenesYerassyl", GITHUB_TOKEN, datetime.datetime.now() - datetime.timedelta(days=10), datetime.datetime.now())
-    var = await gh.get_repo_info(GITHUB_TOKEN)
+    var = await gh.get_user_stats("", "")
     # async with aiohttp.ClientSession() as session:
     #     var = await gh.handle_request(endpoint="/user", access_token=GITHUB_TOKEN, session=session)
     print(var)
