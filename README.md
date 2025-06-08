@@ -74,12 +74,30 @@ GitHub Star 수 기준으로 전 세계 사용자 랭킹 제공
 ## F. 프로젝트 개발 결과물 소개 (+ 다이어그램)
 ![결과물 다이어그램](./images/image-4.png)
 
+
 ## G. 개발 결과물 사용 방법 (설치 및 실행 방법 등)
-_(알려주시면 작성 예정)_
-1. python -m venv venv
-2. Activate environment
-3. pip install -r requirements.txt
-4. python wsgi.py
+
+### 1. 서비스 접속
+
+* 웹 서비스는 다음 URL에서 확인할 수 있습니다:
+  🔗 [http://3.107.76.196/](http://3.107.76.196/)
+
+### 2. 로컬 실행 방법
+
+```bash
+# 가상환경 생성
+python -m venv venv
+
+# 가상환경 활성화 (Windows 기준)
+venv\Scripts\activate
+
+# 필요 패키지 설치
+pip install -r requirements.txt
+
+# 서버 실행
+python wsgi.py
+```
+
 
 ## H. 개발 결과물의 활용 방안
 
